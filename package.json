@@ -1,0 +1,23 @@
+{
+  "name": "edupay-pro",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev:dashboard & npm run dev:api",
+    "dev:dashboard": "npm run dev --workspace=apps/dashboard",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "build": "npm run build --workspace=apps/dashboard",
+    "preview": "npm run preview --workspace=apps/dashboard",
+    "db:generate": "npm run db:generate --workspace=apps/api",
+    "db:migrate": "npm run db:migrate --workspace=apps/api",
+    "db:push": "npm run db:push --workspace=apps/api",
+    "db:seed": "npm run db:seed --workspace=apps/api",
+    "db:studio": "npm run db:studio --workspace=apps/api"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2"
+  }
+}
