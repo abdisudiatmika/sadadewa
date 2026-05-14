@@ -38,6 +38,7 @@ export const auth = betterAuth({
     cookie: {
       sameSite: "none",
       secure: true,
+      path: "/", // SANGAT PENTING: Agar kunci login bisa dipakai di semua folder API
     },
   },
   trustedOrigins: [
