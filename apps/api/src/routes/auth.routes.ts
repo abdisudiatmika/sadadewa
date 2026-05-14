@@ -1,18 +1,11 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { toNodeHandler } from "better-auth/node";
+import { expressHandler } from "better-auth/express";
 import { auth } from "../auth/index.js";
 
 const router = Router();
 
-/**
- * Better Auth handles all /api/auth/* routes automatically.
- * This includes:
- *   POST /api/auth/sign-in/credential
- *   POST /api/auth/sign-up/credential
- *   POST /api/auth/sign-out
- *   GET  /api/auth/session
- */
-router.all("/*splat", toNodeHandler(auth) as any);
+// Gunakan handler khusus Express untuk kompatibilitas Vercel yang lebih baik
+router.all("/*", expressHandler(auth));
 
 export default router;

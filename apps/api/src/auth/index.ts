@@ -33,13 +33,14 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
-  baseURL: "https://sadadewa-api.vercel.app",
   advanced: {
     crossSite: true,
     cookie: {
+      namePrefix: "edupay",
       sameSite: "none",
       secure: true,
       path: "/",
+      httpOnly: true,
     },
   },
   trustedOrigins: [
