@@ -33,16 +33,16 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
-  // Biarkan Better-Auth mendeteksi URL secara otomatis di Vercel
+  baseURL: "https://sadadewa-api.vercel.app",
   advanced: {
+    crossSite: true,
     cookie: {
       sameSite: "none",
       secure: true,
-      path: "/", // SANGAT PENTING: Agar kunci login bisa dipakai di semua folder API
+      path: "/",
     },
   },
   trustedOrigins: [
-    process.env.CORS_ORIGIN || "http://localhost:5173",
     "https://sadadewa-dashboard.vercel.app",
     "https://sadadewa-api.vercel.app"
   ],
