@@ -33,11 +33,16 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
   advanced: {
     cookie: {
       sameSite: "none",
       secure: true,
     },
   },
-  trustedOrigins: [process.env.CORS_ORIGIN || "http://localhost:5173"],
+  trustedOrigins: [
+    process.env.CORS_ORIGIN || "http://localhost:5173",
+    "https://sadadewa-dashboard.vercel.app",
+    "https://sadadewa-api.vercel.app"
+  ],
 });
