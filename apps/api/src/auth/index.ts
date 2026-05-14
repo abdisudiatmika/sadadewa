@@ -33,7 +33,7 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  // Biarkan Better-Auth mendeteksi URL secara otomatis di Vercel
   advanced: {
     cookie: {
       sameSite: "none",
