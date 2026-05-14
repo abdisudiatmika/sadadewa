@@ -31,7 +31,7 @@ export default function TopNav() {
             <input
               id="search-input"
               className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pl-10 pr-4 py-2 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-transparent"
-              placeholder="Search students, invoices..."
+              placeholder="Cari siswa, tagihan..."
               type="text"
             />
           </div>
@@ -61,7 +61,7 @@ export default function TopNav() {
           onClick={() => navigate('/pos')}
         >
           <span className="material-symbols-outlined">add</span>
-          New Payment
+          Pembayaran Baru
         </button>
 
         {/* User Info & Logout */}
@@ -76,7 +76,7 @@ export default function TopNav() {
           <button
             onClick={handleLogout}
             className="text-on-surface-variant hover:text-error transition-colors w-10 h-10 flex items-center justify-center rounded-full hover:bg-error-container"
-            title="Logout"
+            title="Keluar"
           >
             <span className="material-symbols-outlined">logout</span>
           </button>

@@ -35,13 +35,13 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h2 className="font-headline-lg text-headline-lg text-primary m-0">Overview</h2>
+          <h2 className="font-headline-lg text-headline-lg text-primary m-0">Ringkasan</h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-            Real-time summary of institutional finances.
+            Ringkasan real-time keuangan sekolah.
           </p>
         </div>
         <div className="text-label-md font-label-md text-on-surface-variant">
-          Last updated: Just now
+          Update terakhir: Baru saja
         </div>
       </div>
 

@@ -99,3 +99,6 @@ build/
 sync_student_accounts.ts
 mass_update_students.ts
 check_time.ts
+
+# Archives
+*.zip

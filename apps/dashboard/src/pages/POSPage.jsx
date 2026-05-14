@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '../lib/api';
 
-const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
 function formatRupiah(value) {
   const num = Number(value || 0);
@@ -77,7 +77,7 @@ export default function POSPage() {
       const res = await api.validateDiscount(discountCode);
       setDiscount(res.data);
     } catch (err) {
-      alert('Invalid discount code: ' + err.message);
+      alert('Kode diskon tidak valid: ' + err.message);
       setDiscount(null);
     }
   };
@@ -119,7 +119,7 @@ export default function POSPage() {
       setDiscount(null);
       setDiscountCode('');
     } catch (err) {
-      alert('❌ Payment failed: ' + err.message);
+      alert('❌ Pembayaran gagal: ' + err.message);
     } finally {
       setProcessing(false);
     }
@@ -141,7 +141,7 @@ export default function POSPage() {
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
             <input
               className="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg font-body-md text-body-md focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary transition-colors"
-              placeholder="Search NISN, Name, or Grade..."
+              placeholder="Cari NISN, Nama, atau Kelas..."
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -184,7 +184,7 @@ export default function POSPage() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider m-0 mb-1">Total Outstanding</p>
+                <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider m-0 mb-1">Total Tunggakan</p>
                 <p className="font-headline-lg text-headline-lg text-error font-bold font-tabular-nums m-0">{formatRupiah(totalOutstanding)}</p>
               </div>
             </div>
@@ -227,7 +227,7 @@ export default function POSPage() {
         {selectedStudent && billingItems.length > 0 && (
           <>
             <div className="flex justify-between items-end">
-              <h3 className="font-headline-md text-headline-md text-on-background m-0">Billing Items</h3>
+              <h3 className="font-headline-md text-headline-md text-on-background m-0">Item Tagihan</h3>
             </div>
             <div className="grid grid-cols-4 gap-4 pb-8">
               {billingItems.map(item => {
@@ -277,7 +277,7 @@ export default function POSPage() {
             <span className="material-symbols-outlined text-secondary">shopping_cart</span>
             Keranjang
           </h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1 mb-0">{cart.length} item(s) selected</p>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-1 mb-0">{cart.length} item terpilih</p>
         </div>
 
         {/* Selected Items List */}
@@ -286,7 +286,7 @@ export default function POSPage() {
             <div className="flex-1 flex items-center justify-center text-on-surface-variant">
               <div className="text-center">
                 <span className="material-symbols-outlined text-4xl mb-2 block">add_shopping_cart</span>
-                <p className="font-body-md">Click billing items to add to cart</p>
+                <p className="font-body-md">Klik item tagihan untuk menambah ke keranjang</p>
               </div>
             </div>
           ) : (
@@ -297,7 +297,7 @@ export default function POSPage() {
                     {item.feeTemplate?.name || 'Tagihan'} {monthNames[item.billingMonth] ? `- ${monthNames[item.billingMonth]}` : ''}
                   </span>
                   <span className={`font-label-md text-label-md ${item.status === 'overdue' ? 'text-error' : 'text-on-surface-variant'}`}>
-                    {item.status === 'overdue' ? 'Overdue' : 'Current'}
+                    {item.status === 'overdue' ? 'Terlambat' : 'Lancar'}
                   </span>
                 </div>
                 <div className="flex items-center gap-4">
@@ -318,11 +318,11 @@ export default function POSPage() {
         {cart.length > 0 && (
           <div className="p-container-padding bg-surface border-t border-surface-variant">
             <div className="flex items-center justify-between mb-4">
-              <span className="font-body-md text-body-md text-on-surface-variant">Discount code</span>
+              <span className="font-body-md text-body-md text-on-surface-variant">Kode diskon</span>
               <div className="flex w-1/2">
                 <input
                   className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-l-lg font-body-md text-body-md focus:outline-none focus:border-secondary uppercase"
-                  placeholder="e.g. BEASISWA"
+                  placeholder="Contoh: BEASISWA"
                   type="text"
                   value={discountCode}
                   onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
@@ -331,25 +331,25 @@ export default function POSPage() {
                   className="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-r-lg font-body-md hover:bg-surface-dim transition-colors border border-l-0 border-outline-variant"
                   onClick={applyDiscount}
                 >
-                  Apply
+                  Gunakan
                 </button>
               </div>
             </div>
 
             {discount && (
               <div className="flex justify-between mb-2 text-secondary">
-                <span className="font-body-lg text-body-lg">Discount ({discount.description})</span>
+                <span className="font-body-lg text-body-lg">Diskon ({discount.description})</span>
                 <span className="font-tabular-nums text-tabular-nums">-{formatRupiah(discountAmount)}</span>
               </div>
             )}
 
             <div className="flex justify-between mb-2">
-              <span className="font-body-lg text-body-lg text-on-surface-variant">Subtotal ({cart.length} items)</span>
+              <span className="font-body-lg text-body-lg text-on-surface-variant">Subtotal ({cart.length} item)</span>
               <span className="font-tabular-nums text-tabular-nums text-on-background">{formatRupiah(subtotal)}</span>
             </div>
             {lateFees > 0 && (
               <div className="flex justify-between mb-6 pb-4 border-b border-surface-variant">
-                <span className="font-body-lg text-body-lg text-on-surface-variant">Late Fees ({overdueCount}x)</span>
+                <span className="font-body-lg text-body-lg text-on-surface-variant">Denda Keterlambatan ({overdueCount}x)</span>
                 <span className="font-tabular-nums text-tabular-nums text-on-background">{formatRupiah(lateFees)}</span>
               </div>
             )}
@@ -367,7 +367,7 @@ export default function POSPage() {
               {processing ? (
                 <>
                   <span className="material-symbols-outlined animate-spin">progress_activity</span>
-                  Processing...
+                  Memproses...
                 </>
               ) : (
                 <>

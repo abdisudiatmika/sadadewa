@@ -3,19 +3,19 @@ import { useAuth } from '../context/AuthContext';
 
 const mainNavItems = [
   { icon: 'dashboard', label: 'Dashboard', path: '/', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan', 'bendahara_pengeluaran', 'teacher'] },
-  { icon: 'manage_accounts', label: 'User Management', path: '/users', roles: ['admin', 'superadmin'] },
-  { icon: 'point_of_sale', label: 'POS Terminal', path: '/pos', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
-  { icon: 'receipt_long', label: 'Billing History', path: '/billing', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
-  { icon: 'group', label: 'Student Records', path: '/students', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan', 'teacher'] },
-  { icon: 'school', label: 'Master Class', path: '/master-classes', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
-  { icon: 'payments', label: 'Fee Master', path: '/fees', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
-  { icon: 'account_balance_wallet', label: 'Expenses', path: '/expenses', roles: ['admin', 'superadmin', 'staff', 'bendahara_pengeluaran'] },
-  { icon: 'analytics', label: 'Reports', path: '/reports', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan', 'bendahara_pengeluaran', 'teacher'] },
+  { icon: 'manage_accounts', label: 'Manajemen User', path: '/users', roles: ['admin', 'superadmin'] },
+  { icon: 'point_of_sale', label: 'Kasir / Pembayaran', path: '/pos', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
+  { icon: 'receipt_long', label: 'Riwayat Pembayaran', path: '/billing', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
+  { icon: 'group', label: 'Data Siswa', path: '/students', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan', 'teacher'] },
+  { icon: 'school', label: 'Master Kelas', path: '/master-classes', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
+  { icon: 'payments', label: 'Master Biaya', path: '/fees', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
+  { icon: 'account_balance_wallet', label: 'Pengeluaran', path: '/expenses', roles: ['admin', 'superadmin', 'staff', 'bendahara_pengeluaran'] },
+  { icon: 'analytics', label: 'Laporan Keuangan', path: '/reports', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan', 'bendahara_pengeluaran', 'teacher'] },
 ];
 
 const bottomNavItems = [
-  { icon: 'settings', label: 'Settings', path: '/settings' },
-  { icon: 'help', label: 'Support', path: '/support' },
+  { icon: 'settings', label: 'Pengaturan', path: '/settings' },
+  { icon: 'help', label: 'Bantuan', path: '/support' },
 ];
 
 export default function Sidebar() {
@@ -39,13 +39,13 @@ export default function Sidebar() {
     >
       {/* Logo & Brand */}
       <div className="px-6 mb-8 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-on-secondary">
-          <span className="material-symbols-outlined icon-fill">account_balance</span>
+        <div className="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center">
+          <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
         </div>
         <div>
           <h1 className="font-headline-md text-headline-md text-primary m-0">EduPay Pro</h1>
           <p className="font-label-md text-label-md text-on-surface-variant m-0 uppercase tracking-wider">
-            {user?.role === 'teacher' ? 'Portal Wali Kelas' : 'Admin Terminal'}
+            {user?.role === 'teacher' ? 'Portal Wali Kelas' : 'Portal Admin'}
           </p>
         </div>
       </div>

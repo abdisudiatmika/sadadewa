@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://sadadewa.com';
 
 /**
  * Fetch wrapper with credentials (cookies) and JSON handling.
