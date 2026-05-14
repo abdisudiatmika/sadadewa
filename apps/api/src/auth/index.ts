@@ -33,5 +33,11 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
+  advanced: {
+    cookie: {
+      sameSite: "none",
+      secure: true,
+    },
+  },
   trustedOrigins: [process.env.CORS_ORIGIN || "http://localhost:5173"],
 });
