@@ -1,4 +1,4 @@
-const API_BASE = 'https://sadadewa.com';
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 /**
  * Fetch wrapper with credentials (cookies) and JSON handling.
