@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # --- 1. Backend Node.js API ---
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: edupay-api
+    restart: unless-stopped
+    environment:
+      # Jangan lupa buat file .env di Mini PC atau masukkan langsung isinya di sini
+      - DATABASE_URL=${DATABASE_URL}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-edupay-pro-secret-change-me-in-production}
+      - NODE_ENV=production
+    # KITA TIDAK MEMBUKA PORT 3000 KE LUAR!
+    # Ini sangat aman, karena hanya Nginx (Dashboard) yang bisa memanggil API ini secara internal.
+    networks:
+      - edupay-network
+
+  # --- 2. Frontend React + Nginx Proxy ---
+  dashboard:
+    build:
+      context: ./apps/dashboard
+      dockerfile: Dockerfile
+    container_name: edupay-dashboard
+    restart: unless-stopped
+    ports:
+      # Membuka Port 80 untuk bisa diakses di browser Mini PC atau jaringan WiFi
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - edupay-network
+
+  # --- 3. (OPSIONAL) Cloudflare Tunnel ---
+  # Hapus tanda pagar (#) di bawah ini jika Anda ingin online menggunakan Cloudflare
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: edupay-cloudflared
+  #   command: tunnel run
+  #   environment:
+  #     - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+  #   restart: unless-stopped
+  #   networks:
+  #     - edupay-network
+
+networks:
+  edupay-network:
+    driver: bridge
