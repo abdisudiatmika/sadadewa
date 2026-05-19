@@ -40,6 +40,8 @@ services:
       # API otomatis menyusun URL koneksi menggunakan variabel dari .env
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-rahasia123}@db:5432/${DB_NAME:-edupay}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-edupay-pro-secret-change-me-in-production}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost}
       - NODE_ENV=production
     depends_on:
       - db
