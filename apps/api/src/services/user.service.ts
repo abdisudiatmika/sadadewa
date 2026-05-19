@@ -25,6 +25,7 @@ export class UserService {
         email: data.email,
         password: data.password || "Password123!", // Default password if not provided
         name: data.name,
+        // @ts-ignore: better-auth typescript definition limitation for custom fields
         role: data.role,
       },
     });
@@ -35,7 +36,7 @@ export class UserService {
   async updateUser(id: string, data: { name?: string; role?: string; email?: string }) {
     const [updated] = await db
       .update(user)
-      .set(data)
+      .set(data as any)
       .where(eq(user.id, id))
       .returning();
     return updated;

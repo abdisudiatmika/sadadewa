@@ -37,7 +37,7 @@ router.post("/", validate({ body: createUserSchema }), async (req: Request, res:
 
 router.put("/:id", async (req: Request, res: Response) => {
   try {
-    const updated = await userService.updateUser(req.params.id, req.body);
+    const updated = await userService.updateUser(req.params.id as string, req.body);
     res.json({ success: true, data: updated });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });
@@ -46,7 +46,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    const deleted = await userService.deleteUser(req.params.id);
+    const deleted = await userService.deleteUser(req.params.id as string);
     res.json({ success: true, data: deleted });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
