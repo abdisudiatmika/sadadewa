@@ -1,7 +1,35 @@
 version: '3.8'
 
 services:
-  # --- 1. Backend Node.js API ---
+  # --- 1. Database PostgreSQL Lokal ---
+  db:
+    image: postgres:15-alpine
+    container_name: edupay-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-rahasia123}
+      POSTGRES_DB: ${DB_NAME:-edupay}
+    volumes:
+      # Data akan disimpan di dalam volume Docker agar tidak hilang walau Mini PC direstart
+      - edupay-db-data:/var/lib/postgresql/data
+    networks:
+      - edupay-network
+
+  # --- 2. Adminer (Pengelola Database Berbasis Web) ---
+  adminer:
+    image: adminer
+    container_name: edupay-adminer
+    restart: unless-stopped
+    ports:
+      # Buka browser Mini PC di http://localhost:8080 untuk mengelola database
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - edupay-network
+
+  # --- 3. Backend Node.js API ---
   api:
     build:
       context: ./apps/api
@@ -9,16 +37,16 @@ services:
     container_name: edupay-api
     restart: unless-stopped
     environment:
-      # Jangan lupa buat file .env di Mini PC atau masukkan langsung isinya di sini
-      - DATABASE_URL=${DATABASE_URL}
+      # API otomatis menyusun URL koneksi menggunakan variabel dari .env
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-rahasia123}@db:5432/${DB_NAME:-edupay}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-edupay-pro-secret-change-me-in-production}
       - NODE_ENV=production
-    # KITA TIDAK MEMBUKA PORT 3000 KE LUAR!
-    # Ini sangat aman, karena hanya Nginx (Dashboard) yang bisa memanggil API ini secara internal.
+    depends_on:
+      - db
     networks:
       - edupay-network
 
-  # --- 2. Frontend React + Nginx Proxy ---
+  # --- 4. Frontend React + Nginx Proxy ---
   dashboard:
     build:
       context: ./apps/dashboard
@@ -26,25 +54,16 @@ services:
     container_name: edupay-dashboard
     restart: unless-stopped
     ports:
-      # Membuka Port 80 untuk bisa diakses di browser Mini PC atau jaringan WiFi
       - "80:80"
     depends_on:
       - api
     networks:
       - edupay-network
 
-  # --- 3. (OPSIONAL) Cloudflare Tunnel ---
-  # Hapus tanda pagar (#) di bawah ini jika Anda ingin online menggunakan Cloudflare
-  # cloudflared:
-  #   image: cloudflare/cloudflared:latest
-  #   container_name: edupay-cloudflared
-  #   command: tunnel run
-  #   environment:
-  #     - TUNNEL_TOKEN=${TUNNEL_TOKEN}
-  #   restart: unless-stopped
-  #   networks:
-  #     - edupay-network
-
 networks:
   edupay-network:
     driver: bridge
+
+# Menyediakan penyimpanan permanen untuk database
+volumes:
+  edupay-db-data:
