@@ -214,4 +214,11 @@ export const api = {
   createUser: (data) => request('/api/users', { method: 'POST', body: JSON.stringify(data) }),
   updateUser: (id, data) => request(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteUser: (id) => request(`/api/users/${id}`, { method: 'DELETE' }),
+
+  // ---- Academic Years ----
+  getAcademicYears: () => request('/api/academic-years'),
+  createAcademicYear: (data) => request('/api/academic-years', { method: 'POST', body: JSON.stringify(data) }),
+  updateAcademicYear: (id, data) => request(`/api/academic-years/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  activateAcademicYear: (id) => request(`/api/academic-years/${id}/activate`, { method: 'PUT' }),
+  deleteAcademicYear: (id) => request(`/api/academic-years/${id}`, { method: 'DELETE' }),
 };

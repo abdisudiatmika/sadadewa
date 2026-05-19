@@ -19,6 +19,7 @@ import expenseRoutes from "./routes/expense.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import masterRoutes from "./routes/master.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import academicYearRoutes from "./routes/academic-year.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -67,6 +68,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/master", masterRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/academic-years", academicYearRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {

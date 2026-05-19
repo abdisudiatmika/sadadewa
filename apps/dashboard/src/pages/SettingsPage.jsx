@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import AcademicYearModal from '../components/settings/AcademicYearModal';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -8,11 +9,21 @@ export default function SettingsPage() {
   const [profileName, setProfileName] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  
+  const [academicYears, setAcademicYears] = useState([]);
+  const [isYearModalOpen, setIsYearModalOpen] = useState(false);
+  const [editingYear, setEditingYear] = useState(null);
 
   useEffect(() => {
     api.getSettings()
       .then(res => {
         if (res.data) setSettings(prev => ({ ...prev, ...res.data }));
+      })
+      .catch(console.error);
+
+    api.getAcademicYears()
+      .then(res => {
+        if (res.data) setAcademicYears(res.data);
       })
       .catch(console.error);
 
@@ -48,6 +59,55 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveAcademicYear = async (data) => {
+    try {
+      if (editingYear) {
+        await api.updateAcademicYear(editingYear.id, data);
+        setMessage('✅ Tahun Ajaran berhasil diperbarui!');
+      } else {
+        await api.createAcademicYear(data);
+        setMessage('✅ Tahun Ajaran berhasil ditambahkan!');
+      }
+      setIsYearModalOpen(false);
+      setEditingYear(null);
+      // Refresh list
+      const res = await api.getAcademicYears();
+      setAcademicYears(res.data);
+    } catch (err) {
+      setMessage('❌ ' + err.message);
+    } finally {
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const handleActivateYear = async (id) => {
+    try {
+      await api.activateAcademicYear(id);
+      setMessage('✅ Tahun Ajaran aktif berhasil diubah!');
+      // Refresh list
+      const res = await api.getAcademicYears();
+      setAcademicYears(res.data);
+    } catch (err) {
+      setMessage('❌ ' + err.message);
+    } finally {
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const handleDeleteYear = async (id) => {
+    if (!confirm('Yakin ingin menghapus Tahun Ajaran ini?')) return;
+    try {
+      await api.deleteAcademicYear(id);
+      setMessage('✅ Tahun Ajaran dihapus');
+      const res = await api.getAcademicYears();
+      setAcademicYears(res.data);
+    } catch (err) {
+      setMessage('❌ ' + err.message);
+    } finally {
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto w-full">
       <div className="mb-8 mt-2">
@@ -66,6 +126,88 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-card-gap">
         {/* Main Settings Column */}
         <div className="lg:col-span-2 space-y-card-gap">
+          
+          {/* Academic Year Management */}
+          <section className="bg-surface rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-outline-variant flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-secondary text-[24px]">calendar_month</span>
+                <h3 className="font-headline-lg text-headline-lg text-on-surface m-0">Tahun Ajaran</h3>
+              </div>
+              <button
+                onClick={() => { setEditingYear(null); setIsYearModalOpen(true); }}
+                className="flex items-center gap-2 px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label-lg hover:bg-secondary hover:text-on-secondary transition-colors"
+              >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                Tambah
+              </button>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-surface-container-lowest border-b border-outline-variant">
+                  <tr>
+                    <th className="px-6 py-4 font-label-lg text-on-surface-variant font-medium">Nama</th>
+                    <th className="px-6 py-4 font-label-lg text-on-surface-variant font-medium">Periode</th>
+                    <th className="px-6 py-4 font-label-lg text-on-surface-variant font-medium text-center">Status</th>
+                    <th className="px-6 py-4 font-label-lg text-on-surface-variant font-medium text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant">
+                  {academicYears.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-8 text-center text-on-surface-variant font-body-md">
+                        Belum ada data Tahun Ajaran.
+                      </td>
+                    </tr>
+                  ) : (
+                    academicYears.map((year) => (
+                      <tr key={year.id} className="hover:bg-surface-container-lowest/50 transition-colors">
+                        <td className="px-6 py-4 font-body-md text-on-surface font-medium">{year.name}</td>
+                        <td className="px-6 py-4 font-body-sm text-on-surface-variant">
+                          {new Date(year.startDate).toLocaleDateString('id-ID')} - {new Date(year.endDate).toLocaleDateString('id-ID')}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {year.isActive ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-tertiary-container text-on-tertiary-container rounded-md text-[11px] font-bold">
+                              <span className="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span>
+                              AKTIF
+                            </span>
+                          ) : (
+                            <button 
+                              onClick={() => handleActivateYear(year.id)}
+                              className="px-3 py-1 border border-outline-variant text-on-surface-variant rounded-md text-[11px] font-medium hover:border-secondary hover:text-secondary transition-colors"
+                            >
+                              Jadikan Aktif
+                            </button>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => { setEditingYear(year); setIsYearModalOpen(true); }}
+                              className="p-1.5 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/20 rounded-md transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
+                            {!year.isActive && (
+                              <button
+                                onClick={() => handleDeleteYear(year.id)}
+                                className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-md transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
           {/* Theme Selection */}
           <section className="bg-surface rounded-xl border border-outline-variant p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
@@ -160,6 +302,14 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <AcademicYearModal
+        isOpen={isYearModalOpen}
+        onClose={() => { setIsYearModalOpen(false); setEditingYear(null); }}
+        onSave={handleSaveAcademicYear}
+        initialData={editingYear}
+      />
     </div>
   );
 }
