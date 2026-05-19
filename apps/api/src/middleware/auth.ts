@@ -61,6 +61,12 @@ export function requireRole(...roles: string[]) {
       return;
     }
 
+    // Superadmin always has access
+    if (req.user.role === "superadmin") {
+      next();
+      return;
+    }
+
     if (!roles.includes(req.user.role)) {
       res.status(403).json({ success: false, error: "Forbidden: insufficient role" });
       return;
