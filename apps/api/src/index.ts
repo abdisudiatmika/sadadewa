@@ -29,7 +29,8 @@ app.set("trust proxy", true);
 // ---- Global Middleware ----
 
 const allowedOrigins = [
-  process.env.CORS_ORIGIN || "http://localhost:5173",
+  process.env.CORS_ORIGIN || "http://localhost",
+  "http://localhost:5173",
   "https://sadadewa-dashboard.vercel.app"
 ];
 

@@ -44,6 +44,7 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
+    "http://localhost",
     "https://sadadewa-dashboard.vercel.app",
     "https://sadadewa-api.vercel.app"
   ],
