@@ -61,12 +61,23 @@ export class MasterService {
 
   async createClass(data: { name: string; gradeId: string; homeroomTeacher?: string; homeroomTeacherId?: string }) {
     // Cari academic year yang aktif
-    const activeYear = await db.query.academicYears.findFirst({
+    let activeYear = await db.query.academicYears.findFirst({
       where: eq(academicYears.isActive, true),
     });
 
+    // Otomatis buat Tahun Ajaran jika belum ada (mencegah error saat pertama kali pakai)
     if (!activeYear) {
-      throw new Error("No active academic year found");
+      const currentYear = new Date().getFullYear();
+      const [newYear] = await db
+        .insert(academicYears)
+        .values({
+          name: `${currentYear}/${currentYear + 1}`,
+          startDate: `${currentYear}-07-01`,
+          endDate: `${currentYear + 1}-06-30`,
+          isActive: true,
+        })
+        .returning();
+      activeYear = newYear;
     }
 
     const [newClass] = await db
