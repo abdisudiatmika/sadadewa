@@ -6,6 +6,6 @@ import { auth } from "../auth/index.js";
 const router = Router();
 
 // Kembali ke handler Node agar server menyala lagi
-router.all("/*", toNodeHandler(auth) as any);
+router.all("/*splat", toNodeHandler(auth) as any);
 
 export default router;
