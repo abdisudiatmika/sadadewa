@@ -177,15 +177,30 @@ export const students = pgTable("students", {
   studentCode: varchar("student_code", { length: 20 }).notNull().unique(),
   nisn: varchar("nisn", { length: 20 }).notNull().unique(),
   fullName: varchar("full_name", { length: 150 }).notNull(),
-  classId: uuid("class_id").references(() => classes.id, {
-    onDelete: "set null",
-  }),
   guardianName: varchar("guardian_name", { length: 150 }),
   guardianPhone: varchar("guardian_phone", { length: 20 }),
   guardianEmail: varchar("guardian_email", { length: 150 }),
   status: studentStatusEnum("status").notNull().default("active"),
   enrolledAt: date("enrolled_at"),
   avatarUrl: text("avatar_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ---- Student Classes (Riwayat Kelas) ----
+
+export const studentClasses = pgTable("student_classes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  studentId: uuid("student_id")
+    .notNull()
+    .references(() => students.id, { onDelete: "cascade" }),
+  classId: uuid("class_id")
+    .notNull()
+    .references(() => classes.id, { onDelete: "cascade" }),
+  academicYearId: uuid("academic_year_id")
+    .notNull()
+    .references(() => academicYears.id, { onDelete: "cascade" }),
+  status: studentStatusEnum("status").notNull().default("active"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -364,6 +379,7 @@ export const academicYearRelations = relations(academicYears, ({ many }) => ({
   classes: many(classes),
   feeTemplates: many(feeTemplates),
   billingItems: many(billingItems),
+  studentClasses: many(studentClasses),
 }));
 
 export const gradeRelations = relations(grades, ({ many }) => ({
@@ -381,18 +397,30 @@ export const classRelations = relations(classes, ({ one, many }) => ({
     fields: [classes.homeroomTeacherId],
     references: [user.id],
   }),
-  students: many(students),
+  studentClasses: many(studentClasses),
 }));
 
 export const studentRelations = relations(students, ({ one, many }) => ({
   user: one(user, { fields: [students.userId], references: [user.id] }),
-  class: one(classes, {
-    fields: [students.classId],
-    references: [classes.id],
-  }),
+  studentClasses: many(studentClasses),
   billingItems: many(billingItems),
   transactions: many(transactions),
   reminders: many(reminders),
+}));
+
+export const studentClassRelations = relations(studentClasses, ({ one }) => ({
+  student: one(students, {
+    fields: [studentClasses.studentId],
+    references: [students.id],
+  }),
+  class: one(classes, {
+    fields: [studentClasses.classId],
+    references: [classes.id],
+  }),
+  academicYear: one(academicYears, {
+    fields: [studentClasses.academicYearId],
+    references: [academicYears.id],
+  }),
 }));
 
 export const feeTemplateRelations = relations(

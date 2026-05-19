@@ -5,6 +5,7 @@ import {
   academicYears,
   billingItems,
   students,
+  studentClasses,
   classes,
 } from "../db/schema.js";
 import { eq, ilike, and, count, sql } from "drizzle-orm";
@@ -205,12 +206,12 @@ export class FeeService {
     if (!template) throw new Error("Fee template not found");
 
     // Find targeted students based on grade filter or explicit class filter
-    let studentConditions;
+    let studentConditions = [
+      eq(studentClasses.academicYearId, template.academicYearId)
+    ];
+
     if (classId) {
-      studentConditions = and(
-        eq(students.status, "active"),
-        eq(students.classId, classId)
-      );
+      studentConditions.push(eq(studentClasses.classId, classId));
     } else if (template.targetGradeId) {
       const targetClasses = await db
         .select({ id: classes.id })
@@ -220,18 +221,13 @@ export class FeeService {
       const classIds = targetClasses.map((c) => c.id);
       if (classIds.length === 0) return { generated: 0 };
 
-      studentConditions = and(
-        eq(students.status, "active"),
-        sql`${students.classId} = ANY(${classIds})`
-      );
-    } else {
-      studentConditions = eq(students.status, "active");
+      studentConditions.push(sql`${studentClasses.classId} = ANY(${classIds})`);
     }
 
     const targetStudents = await db
-      .select({ id: students.id })
-      .from(students)
-      .where(studentConditions);
+      .select({ id: studentClasses.studentId })
+      .from(studentClasses)
+      .where(and(...studentConditions));
 
     if (targetStudents.length === 0) return { generated: 0 };
 

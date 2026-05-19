@@ -195,4 +195,26 @@ router.delete("/:id", async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/students/promote - Promote students to a new class
+router.post("/promote", async (req: Request, res: Response) => {
+  try {
+    const { studentIds, newClassId, newAcademicYearId } = req.body;
+    
+    if (!studentIds || !Array.isArray(studentIds) || !newClassId || !newAcademicYearId) {
+      res.status(400).json({ success: false, error: "Missing required fields" });
+      return;
+    }
+    
+    const count = await studentService.promoteStudents({
+      studentIds,
+      newClassId,
+      newAcademicYearId
+    });
+    
+    res.json({ success: true, data: { promoted: count } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

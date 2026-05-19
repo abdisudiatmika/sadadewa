@@ -1,5 +1,5 @@
 import { db } from "../db/index.js";
-import { students, classes, grades } from "../db/schema.js";
+import { students, classes, grades, studentClasses, academicYears } from "../db/schema.js";
 import { eq, ilike, and, or, sql, count } from "drizzle-orm";
 import { userService } from "./user.service.js";
 
@@ -36,7 +36,8 @@ export class StudentService {
     }
 
     if (params.classId) {
-      conditions.push(eq(students.classId, params.classId));
+      // Because we use leftJoin, we need to filter on the joined table
+      conditions.push(eq(studentClasses.classId, params.classId));
     }
 
     const whereClause =
@@ -46,7 +47,15 @@ export class StudentService {
       db
         .select()
         .from(students)
-        .leftJoin(classes, eq(students.classId, classes.id))
+        .leftJoin(studentClasses, and(
+          eq(studentClasses.studentId, students.id),
+          eq(studentClasses.status, "active")
+        ))
+        .leftJoin(academicYears, and(
+          eq(studentClasses.academicYearId, academicYears.id),
+          eq(academicYears.isActive, true)
+        ))
+        .leftJoin(classes, eq(studentClasses.classId, classes.id))
         .leftJoin(grades, eq(classes.gradeId, grades.id))
         .where(whereClause)
         .limit(perPage)
@@ -55,6 +64,14 @@ export class StudentService {
       db
         .select({ count: count() })
         .from(students)
+        .leftJoin(studentClasses, and(
+          eq(studentClasses.studentId, students.id),
+          eq(studentClasses.status, "active")
+        ))
+        .leftJoin(academicYears, and(
+          eq(studentClasses.academicYearId, academicYears.id),
+          eq(academicYears.isActive, true)
+        ))
         .where(whereClause),
     ]);
 
@@ -80,18 +97,27 @@ export class StudentService {
    * Get a single student by ID with class/grade info.
    */
   async getById(id: string) {
-    const result = await db.query.students.findFirst({
-      where: eq(students.id, id),
-      with: {
-        class: {
-          with: {
-            grade: true,
-          },
-        },
-      },
-    });
+    const result = await db
+      .select()
+      .from(students)
+      .leftJoin(studentClasses, and(
+        eq(studentClasses.studentId, students.id),
+        eq(studentClasses.status, "active")
+      ))
+      .leftJoin(academicYears, and(
+        eq(studentClasses.academicYearId, academicYears.id),
+        eq(academicYears.isActive, true)
+      ))
+      .leftJoin(classes, eq(studentClasses.classId, classes.id))
+      .leftJoin(grades, eq(classes.gradeId, grades.id))
+      .where(eq(students.id, id));
 
-    return result || null;
+    if (!result || result.length === 0) return null;
+    const row = result[0];
+    return {
+      ...row.students,
+      class: row.classes ? { ...row.classes, grade: row.grades } : null
+    };
   }
 
   /**
@@ -101,7 +127,15 @@ export class StudentService {
     const results = await db
       .select()
       .from(students)
-      .leftJoin(classes, eq(students.classId, classes.id))
+      .leftJoin(studentClasses, and(
+        eq(studentClasses.studentId, students.id),
+        eq(studentClasses.status, "active")
+      ))
+      .leftJoin(academicYears, and(
+        eq(studentClasses.academicYearId, academicYears.id),
+        eq(academicYears.isActive, true)
+      ))
+      .leftJoin(classes, eq(studentClasses.classId, classes.id))
       .leftJoin(grades, eq(classes.gradeId, grades.id))
       .where(
         or(
@@ -184,7 +218,6 @@ export class StudentService {
         studentCode: finalStudentCode,
         nisn: data.nisn,
         fullName: data.fullName,
-        classId: data.classId || null,
         guardianName: data.guardianName,
         guardianPhone: data.guardianPhone,
         guardianEmail: data.guardianEmail,
@@ -192,6 +225,22 @@ export class StudentService {
         enrolledAt: data.enrolledAt,
       })
       .returning();
+
+    // 2.5 Assign to class in active academic year
+    if (data.classId) {
+      const activeYear = await db.query.academicYears.findFirst({
+        where: eq(academicYears.isActive, true),
+      });
+
+      if (activeYear) {
+        await db.insert(studentClasses).values({
+          studentId: student.id,
+          classId: data.classId,
+          academicYearId: activeYear.id,
+          status: "active",
+        });
+      }
+    }
 
     // 3. Automatically create a user account for the student
     try {
@@ -231,11 +280,45 @@ export class StudentService {
       avatarUrl: string;
     }>
   ) {
+    // Pisahkan classId karena classId sekarang masuk ke riwayat studentClasses
+    const { classId, ...updateData } = data;
+
     const [updated] = await db
       .update(students)
-      .set({ ...data, updatedAt: new Date() } as any)
+      .set({ ...updateData, updatedAt: new Date() } as any)
       .where(eq(students.id, id))
       .returning();
+
+    // Update kelas aktif (hanya mengubah riwayat kelas aktif tahun ini)
+    if (classId) {
+      const activeYear = await db.query.academicYears.findFirst({
+        where: eq(academicYears.isActive, true),
+      });
+
+      if (activeYear) {
+        // Cek apakah sudah ada riwayat di tahun aktif
+        const existingClass = await db.query.studentClasses.findFirst({
+          where: and(
+            eq(studentClasses.studentId, id),
+            eq(studentClasses.academicYearId, activeYear.id)
+          )
+        });
+
+        if (existingClass) {
+          await db
+            .update(studentClasses)
+            .set({ classId, updatedAt: new Date() })
+            .where(eq(studentClasses.id, existingClass.id));
+        } else {
+          await db.insert(studentClasses).values({
+            studentId: id,
+            classId,
+            academicYearId: activeYear.id,
+            status: "active",
+          });
+        }
+      }
+    }
 
     return updated || null;
   }
@@ -280,6 +363,27 @@ export class StudentService {
     }
 
     return results;
+  }
+
+  /**
+   * Promote students to a new class for a new academic year.
+   */
+  async promoteStudents(data: {
+    studentIds: string[];
+    newClassId: string;
+    newAcademicYearId: string;
+  }) {
+    if (data.studentIds.length === 0) return 0;
+
+    const values = data.studentIds.map(studentId => ({
+      studentId,
+      classId: data.newClassId,
+      academicYearId: data.newAcademicYearId,
+      status: "active" as const,
+    }));
+
+    const inserted = await db.insert(studentClasses).values(values).returning();
+    return inserted.length;
   }
 }
 

@@ -17,5 +17,5 @@ RUN npm run build
 # Expose the API port
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application with auto-migration
+CMD ["sh", "-c", "npm run db:push && npm start"]

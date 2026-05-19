@@ -133,6 +133,9 @@ export const api = {
     return request(`/api/students/${id}/billing${query}`);
   },
 
+  promoteStudents: (data) =>
+    request('/api/students/promote', { method: 'POST', body: JSON.stringify(data) }),
+
   // ---- Fees ----
   getFees: (params = {}) => {
     const query = new URLSearchParams();

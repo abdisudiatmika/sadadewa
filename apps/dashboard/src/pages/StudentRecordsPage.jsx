@@ -43,12 +43,17 @@ export default function StudentRecordsPage() {
   const [meta, setMeta] = useState({ total: 0, totalPages: 1 });
   const fileInputRef = useRef(null);
 
-  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
+
+  // Bulk Selection & Promotion
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showPromoteModal, setShowPromoteModal] = useState(false);
+  const [promoteForm, setPromoteForm] = useState({ newClassId: '', newAcademicYearId: '' });
+  const [academicYearsList, setAcademicYearsList] = useState([]);
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -66,6 +71,7 @@ export default function StudentRecordsPage() {
   useEffect(() => { 
     fetchStudents(); 
     api.getClasses().then(res => setClassesList(res.data || [])).catch(console.error);
+    api.getAcademicYears().then(res => setAcademicYearsList(res.data || [])).catch(console.error);
   }, [page, perPage]);
 
   useEffect(() => {
@@ -124,7 +130,6 @@ export default function StudentRecordsPage() {
     }
   };
 
-  // Handle delete
   const handleDelete = async (student) => {
     if (!confirm(`Hapus siswa "${student.fullName}"? Status akan diubah menjadi inactive.`)) return;
     try {
@@ -132,6 +137,42 @@ export default function StudentRecordsPage() {
       fetchStudents();
     } catch (err) {
       alert('Gagal menghapus: ' + err.message);
+    }
+  };
+
+  const toggleSelect = (id) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedIds(newSet);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === students.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(students.map(s => s.id)));
+    }
+  };
+
+  const handlePromote = async (e) => {
+    e.preventDefault();
+    if (selectedIds.size === 0) return;
+    setSaving(true);
+    try {
+      await api.promoteStudents({
+        studentIds: Array.from(selectedIds),
+        newClassId: promoteForm.newClassId,
+        newAcademicYearId: promoteForm.newAcademicYearId,
+      });
+      alert('✅ Kenaikan kelas berhasil diproses!');
+      setShowPromoteModal(false);
+      setSelectedIds(new Set());
+      fetchStudents();
+    } catch (err) {
+      alert('Gagal mutasi kelas: ' + err.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -224,6 +265,31 @@ export default function StudentRecordsPage() {
         </div>
       </div>
 
+      {/* Bulk Actions */}
+      {selectedIds.size > 0 && (
+        <div className="mb-4 bg-tertiary-container text-on-tertiary-container px-4 py-3 rounded-xl flex items-center justify-between animate-in fade-in zoom-in duration-200">
+          <div className="flex items-center gap-2 font-body-md font-medium">
+            <span className="material-symbols-outlined text-[20px]">check_circle</span>
+            {selectedIds.size} Siswa Terpilih
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="px-4 py-1.5 rounded-lg border border-on-tertiary-container/30 hover:bg-on-tertiary-container/10 transition-colors font-label-md"
+            >
+              Batal
+            </button>
+            <button
+              onClick={() => setShowPromoteModal(true)}
+              className="px-4 py-1.5 bg-on-tertiary-container text-tertiary-container rounded-lg shadow-sm hover:opacity-90 transition-opacity font-label-md flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">upgrade</span>
+              Mutasi / Naik Kelas
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Import Excel Dropzone (Compact) */}
       <div className="mb-card-gap bg-surface-container-lowest border border-dashed border-outline-variant rounded-xl p-5 flex flex-col md:flex-row items-center justify-between cursor-pointer hover:bg-surface-container-low hover:border-secondary transition-all group">
         <div className="flex items-center gap-4">
@@ -301,10 +367,18 @@ export default function StudentRecordsPage() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-surface-container border-b border-outline-variant sticky top-0 z-10 shadow-sm">
                 <tr>
+                  <th className="py-3 px-4 w-12">
+                    <input 
+                      type="checkbox" 
+                      className="rounded text-secondary focus:ring-secondary cursor-pointer"
+                      checked={students.length > 0 && selectedIds.size === students.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">Student ID</th>
                   <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">Full Name</th>
                   <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">NISN</th>
-                  <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">Grade & Class</th>
+                  <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">Grade & Class (Aktif)</th>
                   <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">Guardian Contact</th>
                   <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium text-center">Status</th>
                   <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium text-right">Actions</th>
@@ -313,13 +387,21 @@ export default function StudentRecordsPage() {
               <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
                 {students.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-on-surface-variant font-body-md">
+                    <td colSpan={8} className="py-12 text-center text-on-surface-variant font-body-md">
                       No students found
                     </td>
                   </tr>
                 ) : (
                   students.map((student, i) => (
-                    <tr key={student.id} className={`hover:bg-surface-container-low transition-colors group ${i % 2 !== 0 ? 'bg-surface' : ''}`}>
+                    <tr key={student.id} className={`hover:bg-surface-container-low transition-colors group ${i % 2 !== 0 ? 'bg-surface' : ''} ${selectedIds.has(student.id) ? 'bg-tertiary-container/20' : ''}`}>
+                      <td className="py-4 px-4">
+                        <input 
+                          type="checkbox" 
+                          className="rounded text-secondary focus:ring-secondary cursor-pointer"
+                          checked={selectedIds.has(student.id)}
+                          onChange={() => toggleSelect(student.id)}
+                        />
+                      </td>
                       <td className="py-4 px-4 font-tabular-nums text-tabular-nums text-on-surface">{student.studentCode}</td>
                       <td className="py-4 px-4">
                         <Link 
@@ -566,6 +648,63 @@ export default function StudentRecordsPage() {
                       {editingStudent ? 'Update' : 'Simpan'}
                     </>
                   )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ===== PROMOTE STUDENTS MODAL ===== */}
+      {showPromoteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPromoteModal(false)} />
+          <div className="relative bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-outline-variant animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-outline-variant bg-surface-container-lowest rounded-t-2xl">
+              <h3 className="font-headline-sm text-on-surface m-0">Mutasi / Kenaikan Kelas</h3>
+              <button onClick={() => setShowPromoteModal(false)} className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full">
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <form onSubmit={handlePromote} className="p-6 space-y-4">
+              <div className="bg-secondary-container/30 px-4 py-3 rounded-xl mb-2 text-on-surface-variant font-body-sm">
+                Anda akan mendaftarkan <strong className="text-secondary">{selectedIds.size} siswa</strong> terpilih ke dalam Tahun Ajaran dan Kelas yang baru. Histori kelas lama akan tetap tersimpan.
+              </div>
+              
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Tahun Ajaran Tujuan</label>
+                <select
+                  required
+                  className="w-full px-3 py-2.5 bg-surface border border-outline-variant rounded-lg font-body-md focus:outline-none focus:border-secondary"
+                  value={promoteForm.newAcademicYearId}
+                  onChange={(e) => setPromoteForm(f => ({ ...f, newAcademicYearId: e.target.value }))}
+                >
+                  <option value="">- Pilih Tahun Ajaran -</option>
+                  {academicYearsList.map(ay => (
+                    <option key={ay.id} value={ay.id}>{ay.name} {ay.isActive ? '(Aktif)' : ''}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Kelas Tujuan</label>
+                <select
+                  required
+                  className="w-full px-3 py-2.5 bg-surface border border-outline-variant rounded-lg font-body-md focus:outline-none focus:border-secondary"
+                  value={promoteForm.newClassId}
+                  onChange={(e) => setPromoteForm(f => ({ ...f, newClassId: e.target.value }))}
+                >
+                  <option value="">- Pilih Kelas Tujuan -</option>
+                  {classesList.map(cls => (
+                    <option key={cls.id} value={cls.id}>{cls.grade?.name} {cls.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-outline-variant">
+                <button type="button" onClick={() => setShowPromoteModal(false)} className="px-4 py-2 hover:bg-surface-container rounded-lg">Batal</button>
+                <button type="submit" disabled={saving} className="px-4 py-2 bg-secondary text-on-secondary rounded-lg font-medium flex items-center gap-2">
+                  {saving ? 'Memproses...' : 'Proses Mutasi'}
                 </button>
               </div>
             </form>
