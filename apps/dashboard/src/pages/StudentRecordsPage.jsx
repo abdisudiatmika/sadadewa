@@ -178,8 +178,20 @@ export default function StudentRecordsPage() {
 
   const updateField = (field, value) => setForm(f => ({ ...f, [field]: value }));
 
-  const handleDownloadTemplate = () => {
-    window.location.href = 'http://localhost:3000/api/students/template';
+  const handleDownloadTemplate = async () => {
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE || '';
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = `${API_BASE || ''}/api/students/template`;
+      // Target _blank is safe for downloads
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Failed to download template', err);
+    }
   };
 
   const handleFileUpload = async (e) => {
