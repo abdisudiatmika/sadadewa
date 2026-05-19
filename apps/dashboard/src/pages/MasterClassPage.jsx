@@ -8,12 +8,18 @@ export default function MasterClassPage() {
   const [grades, setGrades] = useState([]);
   const [classesList, setClassesList] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [academicYearsList, setAcademicYearsList] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('class'); // 'class' or 'grade'
   const [editingItem, setEditingItem] = useState(null);
+  
+  // Copy Modal State
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [copyForm, setCopyForm] = useState({ sourceAcademicYearId: '', targetAcademicYearId: '' });
+  const [copying, setCopying] = useState(false);
   
   // Form State
   const [gradeForm, setGradeForm] = useState({ name: '', level: 10 });
@@ -25,14 +31,16 @@ export default function MasterClassPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [gradesRes, classesRes, teachersRes] = await Promise.all([
+      const [gradesRes, classesRes, teachersRes, ayRes] = await Promise.all([
         api.getGrades(),
         api.getClassesMaster(),
-        api.getTeachers().catch(() => ({ data: [] }))
+        api.getTeachers().catch(() => ({ data: [] })),
+        api.getAcademicYears().catch(() => ({ data: [] }))
       ]);
       setGrades(gradesRes.data || []);
       setClassesList(classesRes.data || []);
       setTeachers(teachersRes.data || []);
+      setAcademicYearsList(ayRes.data || []);
     } catch (err) {
       console.error('Failed to fetch master data:', err);
     } finally {
@@ -130,6 +138,25 @@ export default function MasterClassPage() {
     }
   };
 
+  const handleCopySubmit = async (e) => {
+    e.preventDefault();
+    if (!copyForm.sourceAcademicYearId || !copyForm.targetAcademicYearId) {
+      alert('Pilih Tahun Ajaran Sumber dan Tujuan');
+      return;
+    }
+    setCopying(true);
+    try {
+      const res = await api.copyClassesMaster(copyForm);
+      alert(`Berhasil menyalin ${res.data.copied} kelas!`);
+      setShowCopyModal(false);
+      fetchData();
+    } catch (err) {
+      alert('Gagal menyalin kelas: ' + err.message);
+    } finally {
+      setCopying(false);
+    }
+  };
+
   return (
     <>
       {/* Header */}
@@ -139,6 +166,13 @@ export default function MasterClassPage() {
           <p className="font-body-md text-body-md text-on-surface-variant m-0">Kelola master data Tingkat (Grade) dan Jurusan/Ruang Kelas (Class).</p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowCopyModal(true)}
+            className="bg-secondary-container text-on-secondary-container border border-outline px-4 py-2.5 rounded-lg font-body-md font-medium hover:bg-secondary-container/80 transition-colors flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[20px]">content_copy</span>
+            Salin Kelas dari Tahun Lalu
+          </button>
           <button
             onClick={() => openGradeModal()}
             className="bg-surface border border-outline px-4 py-2.5 rounded-lg font-body-md text-body-md font-medium text-on-surface hover:bg-surface-container transition-colors flex items-center gap-2"
@@ -369,6 +403,63 @@ export default function MasterClassPage() {
                 <button type="submit" disabled={saving} className="px-5 py-2 bg-primary text-on-primary rounded-lg font-body-md font-medium hover:bg-on-background transition-colors disabled:opacity-50 flex items-center gap-2">
                   {saving && <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>}
                   Simpan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ===== COPY MODAL ===== */}
+      {showCopyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCopyModal(false)} />
+          <div className="relative bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-outline-variant animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-outline-variant bg-surface-container-lowest rounded-t-2xl">
+              <h3 className="font-headline-sm text-on-surface m-0">Salin Data Kelas</h3>
+              <button onClick={() => setShowCopyModal(false)} className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full">
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <form onSubmit={handleCopySubmit} className="p-6 space-y-4">
+              <div className="bg-secondary-container/30 px-4 py-3 rounded-xl mb-2 text-on-surface-variant font-body-sm">
+                Sistem akan menyalin <strong>semua kelas dan jurusan</strong> dari Tahun Ajaran Sumber ke Tahun Ajaran Tujuan. (Kelas yang memiliki nama yang sama di tahun tujuan akan dilewati otomatis).
+              </div>
+              
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Tahun Ajaran Sumber (Asal)</label>
+                <select
+                  required
+                  className="w-full px-3 py-2.5 bg-surface border border-outline-variant rounded-lg font-body-md focus:outline-none focus:border-secondary"
+                  value={copyForm.sourceAcademicYearId}
+                  onChange={(e) => setCopyForm(f => ({ ...f, sourceAcademicYearId: e.target.value }))}
+                >
+                  <option value="">- Pilih Tahun Ajaran Asal -</option>
+                  {academicYearsList.map(ay => (
+                    <option key={ay.id} value={ay.id}>{ay.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Tahun Ajaran Tujuan</label>
+                <select
+                  required
+                  className="w-full px-3 py-2.5 bg-surface border border-outline-variant rounded-lg font-body-md focus:outline-none focus:border-secondary"
+                  value={copyForm.targetAcademicYearId}
+                  onChange={(e) => setCopyForm(f => ({ ...f, targetAcademicYearId: e.target.value }))}
+                >
+                  <option value="">- Pilih Tahun Ajaran Tujuan -</option>
+                  {academicYearsList.map(ay => (
+                    <option key={ay.id} value={ay.id}>{ay.name} {ay.isActive ? '(Aktif)' : ''}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-outline-variant">
+                <button type="button" onClick={() => setShowCopyModal(false)} className="px-4 py-2 hover:bg-surface-container rounded-lg">Batal</button>
+                <button type="submit" disabled={copying} className="px-4 py-2 bg-secondary text-on-secondary rounded-lg font-medium flex items-center gap-2">
+                  {copying ? 'Menyalin...' : 'Mulai Salin'}
                 </button>
               </div>
             </form>

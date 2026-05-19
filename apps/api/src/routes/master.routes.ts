@@ -127,4 +127,18 @@ router.delete("/classes/:id", async (req: Request, res: Response) => {
   }
 });
 
+router.post("/classes/copy", async (req: Request, res: Response) => {
+  try {
+    const { sourceAcademicYearId, targetAcademicYearId } = req.body;
+    if (!sourceAcademicYearId || !targetAcademicYearId) {
+      res.status(400).json({ success: false, error: "Missing source or target academic year" });
+      return;
+    }
+    const result = await masterService.copyClasses(sourceAcademicYearId, targetAcademicYearId);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

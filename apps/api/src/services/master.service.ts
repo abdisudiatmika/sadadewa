@@ -111,6 +111,45 @@ export class MasterService {
     return deleted || null;
   }
 
+  async copyClasses(sourceAcademicYearId: string, targetAcademicYearId: string) {
+    // Ambil semua kelas dari tahun ajaran sumber
+    const sourceClasses = await db
+      .select()
+      .from(classes)
+      .where(eq(classes.academicYearId, sourceAcademicYearId));
+
+    if (sourceClasses.length === 0) {
+      return { copied: 0 };
+    }
+
+    // Ambil semua kelas yang sudah ada di tahun ajaran target untuk mencegah duplikasi
+    const existingClasses = await db
+      .select()
+      .from(classes)
+      .where(eq(classes.academicYearId, targetAcademicYearId));
+
+    const existingNames = new Set(existingClasses.map(c => `${c.name}-${c.gradeId}`));
+
+    // Filter kelas yang belum ada di target
+    const classesToInsert = sourceClasses
+      .filter(c => !existingNames.has(`${c.name}-${c.gradeId}`))
+      .map(c => ({
+        name: c.name,
+        gradeId: c.gradeId,
+        homeroomTeacher: c.homeroomTeacher,
+        homeroomTeacherId: c.homeroomTeacherId,
+        academicYearId: targetAcademicYearId
+      }));
+
+    if (classesToInsert.length === 0) {
+      return { copied: 0 };
+    }
+
+    // Insert batch
+    const inserted = await db.insert(classes).values(classesToInsert).returning();
+    return { copied: inserted.length };
+  }
+
   // ==========================================
   // USERS / TEACHERS
   // ==========================================

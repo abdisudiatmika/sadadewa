@@ -95,6 +95,7 @@ export const api = {
   createClass: (data) => request('/api/master/classes', { method: 'POST', body: JSON.stringify(data) }),
   updateClass: (id, data) => request(`/api/master/classes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteClass: (id) => request(`/api/master/classes/${id}`, { method: 'DELETE' }),
+  copyClassesMaster: (data) => request('/api/master/classes/copy', { method: 'POST', body: JSON.stringify(data) }),
 
   // ---- Students ----
   getClasses: () =>
