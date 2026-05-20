@@ -20,7 +20,7 @@ export default function TopNav() {
       {/* Left: Brand / Search Context */}
       {isPos ? (
         <div className="flex items-center gap-card-gap flex-1">
-          <span className="font-headline-lg text-headline-lg font-bold text-primary">EduPay Admin</span>
+          <span className="font-headline-lg text-headline-lg font-bold text-primary">Sibajra Pay</span>
         </div>
       ) : (
         <div className="flex items-center gap-4 flex-1">

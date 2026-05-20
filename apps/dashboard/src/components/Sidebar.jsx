@@ -43,7 +43,7 @@ export default function Sidebar() {
           <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
         </div>
         <div>
-          <h1 className="font-headline-md text-headline-md text-primary m-0">EduPay Pro</h1>
+          <h1 className="font-headline-md text-headline-md text-primary m-0">Sibajra Pay</h1>
           <p className="font-label-md text-label-md text-on-surface-variant m-0 uppercase tracking-wider">
             {user?.role === 'teacher' ? 'Portal Wali Kelas' : 'Portal Admin'}
           </p>

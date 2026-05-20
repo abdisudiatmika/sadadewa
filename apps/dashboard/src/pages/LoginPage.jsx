@@ -55,10 +55,11 @@ export default function LoginPage() {
           
           {/* Header / Brand */}
           <div className="text-center flex flex-col items-center gap-2">
-            <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center mb-2 shadow-sm">
-              <span className="material-symbols-outlined text-on-secondary" style={{ fontSize: '28px' }}>account_balance</span>
+            <div className="w-16 h-16 rounded-xl flex items-center justify-center mb-2 shadow-sm overflow-hidden bg-white/50 backdrop-blur-md border border-white/20 p-2">
+              <img src="/logo.png" alt="Sibajra Pay Logo" className="w-full h-full object-contain drop-shadow-md" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+              <span className="material-symbols-outlined text-primary hidden" style={{ fontSize: '32px' }}>account_balance</span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-primary m-0">EduPay Pro</h1>
+            <h1 className="font-headline-lg text-headline-lg text-primary m-0">Sibajra Pay</h1>
             <p className="font-body-md text-body-md text-on-surface-variant m-0">Fintech School OS</p>
           </div>
 
@@ -119,7 +120,7 @@ export default function LoginPage() {
                 <input 
                   className="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:border-secondary focus:ring-1 focus:ring-secondary focus:outline-none transition-shadow" 
                   id="email" 
-                  placeholder={role === 'student' ? 'Masukkan NISN' : 'admin@edupay.com'} 
+                  placeholder={role === 'student' ? 'Masukkan NISN' : 'admin@sibajrapay.com'} 
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -177,7 +178,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="font-label-md text-label-md text-surface-container-lowest/80">© 2024 EduPay Pro. Secure Financial Gateway.</p>
+          <p className="font-label-md text-label-md text-surface-container-lowest/80">© 2024 Sibajra Pay. Secure Financial Gateway.</p>
         </div>
       </main>
     </div>
