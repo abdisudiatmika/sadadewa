@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import { api } from '../lib/api';
 
 function formatRupiah(value) {
@@ -25,6 +26,7 @@ export default function FeeMasterPage() {
   const [selectedClassId, setSelectedClassId] = useState('');
   const [generating, setGenerating] = useState(false);
   const [classesList, setClassesList] = useState([]);
+  const [uploadingArrears, setUploadingArrears] = useState(false);
 
   const openModal = (fee = null) => {
     setEditingFee(fee);
@@ -84,6 +86,60 @@ export default function FeeMasterPage() {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE || '';
+      const link = document.createElement('a');
+      link.href = `${API_BASE}/api/billing/template-arrears`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Failed to download template', err);
+    }
+  };
+
+  const handleArrearsUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingArrears(true);
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+      
+      if (jsonData.length === 0) {
+        throw new Error("File Excel kosong atau tidak valid.");
+      }
+
+      const records = jsonData.map(row => {
+        return {
+          nisn: String(row.nisn || row.NISN || "").trim(),
+          billName: String(row.namaTagihan || row['Nama Tagihan'] || "Tunggakan Lama").trim(),
+          amount: Number(row.nominal || row.Nominal || 0)
+        };
+      }).filter(r => r.nisn && r.amount > 0);
+
+      if (records.length === 0) {
+        throw new Error("Tidak menemukan data tunggakan valid untuk diunggah.");
+      }
+
+      const res = await api.bulkUploadArrears(records);
+      alert(`Berhasil mengunggah dan membuat tagihan untuk ${res.data.imported} data tunggakan!`);
+      fetchData();
+    } catch (error) {
+      alert("Gagal mengunggah file tunggakan: " + error.message);
+    } finally {
+      setUploadingArrears(false);
+      e.target.value = ''; // reset file input
+    }
+  };
+
   useEffect(() => { fetchData(); }, []);
   useEffect(() => {
     const timer = setTimeout(fetchData, 400);
@@ -98,7 +154,7 @@ export default function FeeMasterPage() {
           <h1 className="font-display text-display text-primary mb-2 m-0">Master Biaya</h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant m-0">Kelola dan definisikan seluruh struktur biaya sekolah.</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex items-center gap-3">
           <div className="relative focus-within:ring-2 focus-within:ring-secondary rounded-lg">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
             <input
@@ -109,6 +165,26 @@ export default function FeeMasterPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          
+          <div className="flex bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 overflow-hidden shadow-sm">
+            <button 
+              onClick={handleDownloadTemplate}
+              className="px-4 py-2.5 hover:bg-on-secondary-container/10 transition-colors flex items-center gap-2 font-label-lg"
+              title="Download Template Excel"
+            >
+              <span className="material-symbols-outlined text-[20px]">download</span>
+              Template
+            </button>
+            <div className="w-[1px] bg-secondary/20"></div>
+            <label className={`px-4 py-2.5 font-label-lg hover:bg-on-secondary-container/10 transition-colors cursor-pointer flex items-center gap-2 ${uploadingArrears ? 'opacity-50 pointer-events-none' : ''}`}>
+              <span className={`material-symbols-outlined text-[20px] ${uploadingArrears ? 'animate-spin' : ''}`}>
+                {uploadingArrears ? 'progress_activity' : 'upload_file'}
+              </span>
+              {uploadingArrears ? 'Memproses...' : 'Upload Tunggakan'}
+              <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleArrearsUpload} disabled={uploadingArrears} />
+            </label>
+          </div>
+          
           <button onClick={() => openModal()} className="font-body-md text-body-md bg-[#0D9488] text-white px-5 py-2.5 rounded-lg hover:bg-[#0F766E] transition-colors duration-200 flex items-center gap-2 shadow-sm font-medium">
             <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>add_circle</span>
             Tambah Biaya Baru

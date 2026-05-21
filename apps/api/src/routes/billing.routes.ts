@@ -64,4 +64,47 @@ router.patch("/:id/status", async (req: Request, res: Response) => {
   }
 });
 
+import * as xlsx from "xlsx";
+
+// GET /api/billing/template-arrears - Download Arrears Template
+router.get("/template-arrears", (req: Request, res: Response) => {
+  const wb = xlsx.utils.book_new();
+  const ws = xlsx.utils.json_to_sheet([
+    {
+      NISN: "1234567890",
+      "Nama Tagihan": "Sisa SPP Semester 1",
+      Nominal: 500000,
+    },
+    {
+      NISN: "0987654321",
+      "Nama Tagihan": "Tunggakan DSP",
+      Nominal: 1500000,
+    },
+  ]);
+
+  ws["!cols"] = [{ wch: 15 }, { wch: 30 }, { wch: 15 }];
+
+  xlsx.utils.book_append_sheet(wb, ws, "Template Tunggakan");
+  const buffer = xlsx.write(wb, { type: "buffer", bookType: "xlsx" });
+
+  res.setHeader("Content-Disposition", "attachment; filename=Template_Tunggakan_Siswa.xlsx");
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.send(buffer);
+});
+
+// POST /api/billing/bulk-arrears - Import arrears from Excel
+router.post("/bulk-arrears", async (req: Request, res: Response) => {
+  try {
+    const records = req.body;
+    if (!Array.isArray(records) || records.length === 0) {
+      res.status(400).json({ success: false, error: "Invalid records format" });
+      return;
+    }
+    const result = await billingService.bulkUploadArrears(records);
+    res.status(201).json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

@@ -1,5 +1,5 @@
 import { db } from "../db/index.js";
-import { billingItems, feeTemplates } from "../db/schema.js";
+import { billingItems, feeTemplates, academicYears, students } from "../db/schema.js";
 import { eq, and, count } from "drizzle-orm";
 
 export class BillingService {
@@ -105,6 +105,96 @@ export class BillingService {
       .returning();
 
     return updated || null;
+  }
+
+  /**
+   * Bulk upload arrears from Excel.
+   */
+  async bulkUploadArrears(records: { nisn: string; amount: number; billName: string }[]) {
+    // 1. Dapatkan academic year yang aktif
+    let activeYear = await db.query.academicYears.findFirst({
+      where: eq(academicYears.isActive, true),
+    });
+
+    if (!activeYear) {
+      const currentYear = new Date().getFullYear();
+      const [newYear] = await db
+        .insert(academicYears)
+        .values({
+          name: `${currentYear}/${currentYear + 1}`,
+          startDate: `${currentYear}-07-01`,
+          endDate: `${currentYear + 1}-06-30`,
+          isActive: true,
+        })
+        .returning();
+      activeYear = newYear;
+    }
+
+    const currentYearId = activeYear.id;
+    let importedCount = 0;
+
+    // Cache template fee yang sudah dibuat agar tidak berulang kali insert
+    const templateCache = new Map<string, string>();
+
+    // Ambil semua template yang ada di tahun ajaran aktif
+    const existingTemplates = await db.query.feeTemplates.findMany({
+      where: and(
+        eq(feeTemplates.academicYearId, currentYearId),
+        eq(feeTemplates.category, "incidental")
+      ),
+    });
+
+    for (const tmpl of existingTemplates) {
+      templateCache.set(tmpl.name.toLowerCase(), tmpl.id);
+    }
+
+    for (const record of records) {
+      // 2. Cari siswa berdasarkan NISN
+      const student = await db.query.students.findFirst({
+        where: eq(students.nisn, record.nisn),
+      });
+
+      if (!student) {
+        console.warn(`Siswa dengan NISN ${record.nisn} tidak ditemukan, melewati...`);
+        continue;
+      }
+
+      // 3. Pastikan feeTemplate untuk nama tagihan ini ada
+      const billNameKey = record.billName.toLowerCase();
+      let templateId = templateCache.get(billNameKey);
+
+      if (!templateId) {
+        // Buat kode unik untuk template
+        const code = `ARR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const [newTemplate] = await db
+          .insert(feeTemplates)
+          .values({
+            code,
+            name: record.billName,
+            category: "incidental",
+            frequency: "once",
+            amount: 0, // Amount default 0 karena tagihan spesifik siswa beda-beda
+            academicYearId: currentYearId,
+          })
+          .returning();
+        templateId = newTemplate.id;
+        templateCache.set(billNameKey, templateId);
+      }
+
+      // 4. Masukkan ke billingItems
+      await db.insert(billingItems).values({
+        studentId: student.id,
+        feeTemplateId: templateId,
+        academicYearId: currentYearId,
+        billingYear: new Date().getFullYear(),
+        amount: record.amount,
+        status: "unpaid",
+      });
+
+      importedCount++;
+    }
+
+    return { imported: importedCount };
   }
 }
 

@@ -129,6 +129,8 @@ export const api = {
   bulkUploadStudents: (records) =>
     request('/api/students/bulk-upload', { method: 'POST', body: JSON.stringify({ records }) }),
 
+  bulkUploadArrears: (records) => request('/api/billing/bulk-arrears', { method: 'POST', body: JSON.stringify(records) }),
+
   getStudentBilling: (id, academicYearId) => {
     const query = academicYearId ? `?academicYearId=${academicYearId}` : '';
     return request(`/api/students/${id}/billing${query}`);
