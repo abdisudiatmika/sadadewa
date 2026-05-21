@@ -109,8 +109,8 @@ export default function StudentRecordsPage() {
     e.preventDefault();
     setFormError('');
 
-    if (!form.studentCode || !form.nisn || !form.fullName) {
-      setFormError('Student Code, NISN, dan Full Name wajib diisi.');
+    if (!form.nisn || !form.fullName) {
+      setFormError('NISN dan Full Name wajib diisi.');
       return;
     }
 
