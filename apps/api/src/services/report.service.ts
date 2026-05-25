@@ -10,7 +10,7 @@ import {
   reminders,
   studentClasses,
 } from "../db/schema.js";
-import { eq, and, sql, count, sum, ne, gte, lte, inArray, desc } from "drizzle-orm";
+import { eq, and, or, sql, count, sum, ne, gte, lte, inArray, desc } from "drizzle-orm";
 
 export class ReportService {
   /**
@@ -172,7 +172,7 @@ export class ReportService {
       .leftJoin(studentClasses, eq(students.id, studentClasses.studentId))
       .leftJoin(classes, eq(studentClasses.classId, classes.id))
       .leftJoin(grades, eq(classes.gradeId, grades.id))
-      .where(eq(billingItems.status, "overdue"))
+      .where(or(eq(billingItems.status, "overdue"), eq(billingItems.status, "unpaid")))
       .groupBy(students.id, students.fullName, classes.name, grades.name)
       .orderBy(sql`SUM(${billingItems.amount}) DESC`)
       .limit(limit);
@@ -320,7 +320,7 @@ export class ReportService {
     gradeId?: string; 
     feeTemplateId?: string;
   }) {
-    const conditions = [eq(billingItems.status, "overdue")];
+    const conditions = [or(eq(billingItems.status, "overdue"), eq(billingItems.status, "unpaid"))];
     
     if (params.feeTemplateId) {
       conditions.push(eq(billingItems.feeTemplateId, params.feeTemplateId));
