@@ -140,7 +140,7 @@ export class BillingService {
     const existingTemplates = await db.query.feeTemplates.findMany({
       where: and(
         eq(feeTemplates.academicYearId, currentYearId),
-        eq(feeTemplates.category, "incidental")
+        eq(feeTemplates.category, "one_time")
       ),
     });
 
@@ -171,7 +171,7 @@ export class BillingService {
           .values({
             code,
             name: record.billName,
-            category: "incidental",
+            category: "one_time",
             frequency: "once",
             amount: 0, // Amount default 0 karena tagihan spesifik siswa beda-beda
             academicYearId: currentYearId,
