@@ -323,7 +323,7 @@ export default function StudentRecordsPage() {
   };
 
   return (
-    <>
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Page Header */}
       <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
         <div>
@@ -408,7 +408,7 @@ export default function StudentRecordsPage() {
       </div>
 
       {/* Data Table Card */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_2px_4px_rgba(0,0,0,0.04)] overflow-hidden">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_2px_4px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col flex-1 min-h-0">
         {/* Table Toolbar */}
         <div className="p-4 border-b border-outline-variant bg-surface-container-lowest flex flex-col md:flex-row gap-4 justify-between items-center">
           <div className="flex items-center gap-3 w-full md:w-auto">
@@ -463,7 +463,7 @@ export default function StudentRecordsPage() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto relative">
+        <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0 relative">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <span className="material-symbols-outlined text-secondary text-4xl animate-spin">progress_activity</span>
@@ -816,6 +816,6 @@ export default function StudentRecordsPage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
