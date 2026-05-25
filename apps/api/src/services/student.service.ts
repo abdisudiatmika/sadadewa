@@ -1,5 +1,5 @@
 import { db } from "../db/index.js";
-import { students, classes, grades, studentClasses, academicYears } from "../db/schema.js";
+import { students, classes, grades, studentClasses, academicYears, user } from "../db/schema.js";
 import { eq, ilike, and, or, sql, count, inArray } from "drizzle-orm";
 import { userService } from "./user.service.js";
 
@@ -324,16 +324,27 @@ export class StudentService {
   }
 
   /**
-   * Soft-delete a student by setting status to inactive.
+   * Hard-delete a student by removing the record.
    */
   async delete(id: string) {
-    const [updated] = await db
-      .update(students)
-      .set({ status: "inactive", updatedAt: new Date() })
+    const student = await db.query.students.findFirst({
+      where: eq(students.id, id),
+    });
+    
+    if (student && student.userId) {
+      try {
+        await db.delete(user).where(eq(user.id, student.userId));
+      } catch (err) {
+        console.error(`Failed to delete linked user ${student.userId}:`, err);
+      }
+    }
+
+    const [deleted] = await db
+      .delete(students)
       .where(eq(students.id, id))
       .returning();
 
-    return updated || null;
+    return deleted || null;
   }
 
   /**
@@ -387,15 +398,31 @@ export class StudentService {
   }
 
   /**
-   * Bulk delete students by setting their status to inactive.
+   * Bulk hard-delete students.
    */
   async bulkDelete(ids: string[]) {
     if (ids.length === 0) return 0;
+
+    const selectedStudents = await db
+      .select({ userId: students.userId })
+      .from(students)
+      .where(inArray(students.id, ids));
+
+    const userIds = selectedStudents.map(s => s.userId).filter(Boolean) as string[];
+
+    if (userIds.length > 0) {
+      try {
+        await db.delete(user).where(inArray(user.id, userIds));
+      } catch (err) {
+        console.error("Failed to delete linked users in bulk:", err);
+      }
+    }
+
     const result = await db
-      .update(students)
-      .set({ status: "inactive", updatedAt: new Date() })
+      .delete(students)
       .where(inArray(students.id, ids))
       .returning();
+
     return result.length;
   }
 }

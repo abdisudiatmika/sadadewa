@@ -131,23 +131,23 @@ export default function StudentRecordsPage() {
   };
 
   const handleDelete = async (student) => {
-    if (!confirm(`Hapus siswa "${student.fullName}"? Status akan diubah menjadi inactive.`)) return;
+    if (!confirm(`Apakah Anda yakin ingin menghapus siswa "${student.fullName}" secara PERMANEN?\nSemua data tagihan dan riwayat transaksi siswa ini juga akan ikut terhapus.`)) return;
     try {
       await api.deleteStudent(student.id);
       fetchStudents();
     } catch (err) {
-      alert('Gagal menghapus: ' + err.message);
+      alert('Gagal menghapus siswa: ' + err.message);
     }
   };
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Hapus ${selectedIds.size} siswa terpilih? Status mereka akan diubah menjadi inactive.`)) return;
+    if (!confirm(`Apakah Anda yakin ingin menghapus ${selectedIds.size} siswa terpilih secara PERMANEN?\nSemua data tagihan dan riwayat transaksi mereka juga akan ikut terhapus.`)) return;
     
     setLoading(true);
     try {
       await api.bulkDeleteStudents(Array.from(selectedIds));
-      alert(`✅ Berhasil menghapus ${selectedIds.size} siswa!`);
+      alert(`✅ Berhasil menghapus ${selectedIds.size} siswa secara permanen!`);
       setSelectedIds(new Set());
       fetchStudents();
     } catch (err) {
