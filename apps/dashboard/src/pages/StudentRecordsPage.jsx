@@ -218,11 +218,37 @@ export default function StudentRecordsPage() {
         let matchedClassId = null;
         
         if (rawClassStr) {
-          // Cari class berdasarkan gabungan nama tingkat dan kelas, misalnya "10 BD 1"
-          const matched = classesList.find(c => {
+          // Normalisasi string dari user (hapus kata "kelas" atau "kls" di depan)
+          const normalizedRaw = rawClassStr.replace(/^(kelas|kls)\s+/i, '').trim();
+          const cleanRaw = normalizedRaw.replace(/[^a-z0-9]/g, '');
+
+          // 1. Cari kecocokan persis (e.g. "10 PPLG 1" === "10 PPLG 1")
+          let matched = classesList.find(c => {
              const fullName = `${c.grade?.name || ''} ${c.name || ''}`.trim().toLowerCase();
-             return fullName === rawClassStr;
+             const normalizedFull = fullName.replace(/^(kelas|kls)\s+/i, '').trim();
+             return normalizedFull === normalizedRaw;
           });
+          
+          // 2. Fallback: kecocokan parsial/awalan (e.g. "10 PPLG" cocok dengan "10 PPLG 1")
+          if (!matched) {
+            matched = classesList.find(c => {
+              const fullName = `${c.grade?.name || ''} ${c.name || ''}`.trim().toLowerCase();
+              const normalizedFull = fullName.replace(/^(kelas|kls)\s+/i, '').trim();
+              const cleanFull = normalizedFull.replace(/[^a-z0-9]/g, '');
+              return cleanFull.startsWith(cleanRaw) || cleanRaw.startsWith(cleanFull);
+            });
+          }
+
+          // 3. Fallback: kecocokan nama tingkat + nama kelas secara terpisah
+          if (!matched) {
+            matched = classesList.find(c => {
+              const gName = (c.grade?.name || '').trim().toLowerCase();
+              const cName = (c.name || '').trim().toLowerCase();
+              const cleanCName = cName.replace(/[^a-z0-9]/g, '');
+              return cleanRaw.includes(gName) && (cleanRaw.includes(cleanCName) || cleanCName.includes(cleanRaw.replace(gName, '').trim()));
+            });
+          }
+
           if (matched) matchedClassId = matched.id;
         }
 
