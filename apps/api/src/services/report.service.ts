@@ -8,6 +8,7 @@ import {
   classes,
   grades,
   reminders,
+  studentClasses,
 } from "../db/schema.js";
 import { eq, and, sql, count, sum, ne, gte, lte, inArray, desc } from "drizzle-orm";
 
@@ -168,7 +169,8 @@ export class ReportService {
       })
       .from(billingItems)
       .innerJoin(students, eq(billingItems.studentId, students.id))
-      .leftJoin(classes, eq(students.classId, classes.id))
+      .leftJoin(studentClasses, eq(students.id, studentClasses.studentId))
+      .leftJoin(classes, eq(studentClasses.classId, classes.id))
       .leftJoin(grades, eq(classes.gradeId, grades.id))
       .where(eq(billingItems.status, "overdue"))
       .groupBy(students.id, students.fullName, classes.name, grades.name)
@@ -324,41 +326,51 @@ export class ReportService {
       conditions.push(eq(billingItems.feeTemplateId, params.feeTemplateId));
     }
 
-    const studentConditions = [];
-    if (params.classId) studentConditions.push(eq(students.classId, params.classId));
-    
-    // For gradeId, we need to join through classes
     let results = await db.query.billingItems.findMany({
       where: and(...conditions),
       with: {
         feeTemplate: true,
         student: {
-          with: { class: { with: { grade: true } } }
+          with: { studentClasses: { with: { class: { with: { grade: true } } } } }
         }
       }
     });
 
-    // Filter by grade if needed (since it's deep in relation)
+    const mappedResults = results.map(r => {
+      const activeClass = r.student?.studentClasses?.[0]?.class;
+      return {
+        ...r,
+        student: r.student ? {
+          ...r.student,
+          class: activeClass
+        } : null
+      };
+    });
+
     if (params.gradeId) {
-      results = results.filter(r => r.student?.class?.gradeId === params.gradeId);
+      return mappedResults.filter(r => r.student?.class?.gradeId === params.gradeId);
     }
     
-    // Filter by class if needed (if studentConditions weren't applied directly)
     if (params.classId) {
-      results = results.filter(r => r.student?.classId === params.classId);
+      return mappedResults.filter(r => r.student?.class?.id === params.classId);
     }
 
-    return results;
+    return mappedResults;
   }
 
   /**
    * Laporan Rekap per Siswa (Student Ledger)
    */
   async getStudentLedger(studentId: string) {
-    const student = await db.query.students.findFirst({
+    const studentData = await db.query.students.findFirst({
       where: eq(students.id, studentId),
-      with: { class: { with: { grade: true } } },
+      with: { studentClasses: { with: { class: { with: { grade: true } } } } },
     });
+
+    const student = studentData ? {
+      ...studentData,
+      class: studentData.studentClasses?.[0]?.class
+    } : null;
 
     const items = await db.query.billingItems.findMany({
       where: eq(billingItems.studentId, studentId),
@@ -381,12 +393,12 @@ export class ReportService {
   async getClassSummary(classId: string) {
     const cls = await db.query.classes.findFirst({
       where: eq(classes.id, classId),
-      with: { grade: true, students: true }
+      with: { grade: true, studentClasses: { with: { student: true } } }
     });
 
     if (!cls) throw new Error("Class not found");
 
-    const studentIds = cls.students.map(s => s.id);
+    const studentIds = cls.studentClasses.map(sc => sc.studentId);
     if (studentIds.length === 0) return { class: cls, stats: [] };
 
     const stats = await db
