@@ -87,7 +87,7 @@ export default function StatCards({ stats }) {
             </h3>
           </div>
 
-          <div className={`font-display text-display text-primary ${stat.highlight ? 'relative z-10' : ''}`}>
+          <div className={`font-headline-lg text-headline-lg text-primary ${stat.highlight ? 'relative z-10' : ''}`}>
             {stat.value}
           </div>
 

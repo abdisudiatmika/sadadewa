@@ -109,7 +109,7 @@ export default function BillingHistoryPage() {
     <div className="flex-1 flex flex-col gap-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="font-display text-display text-on-surface m-0">
+          <h2 className="font-headline-lg text-headline-lg text-on-surface m-0">
             {studentId && studentName 
               ? `Pembayaran: ${studentName}` 
               : 'Riwayat Pembayaran'}

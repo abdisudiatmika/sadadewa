@@ -111,7 +111,7 @@ export default function SettingsPage() {
   return (
     <div className="max-w-5xl mx-auto w-full">
       <div className="mb-8 mt-2">
-        <h2 className="font-display text-display text-on-surface m-0">Pengaturan Sistem</h2>
+        <h2 className="font-headline-lg text-headline-lg text-on-surface m-0">Pengaturan Sistem</h2>
         <p className="font-body-lg text-body-lg text-on-surface-variant mt-2 m-0">Manage your administrative preferences, visual appearance, and security settings.</p>
       </div>
 

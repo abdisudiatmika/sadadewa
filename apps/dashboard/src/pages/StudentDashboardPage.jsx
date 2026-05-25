@@ -68,7 +68,7 @@ export default function StudentDashboardPage() {
           
           <div className="relative z-10 flex flex-col gap-unit">
             <h2 className="font-body-lg text-body-lg text-on-primary/80 m-0">Total Tunggakan</h2>
-            <div className="font-display text-display flex items-baseline gap-unit m-0 mt-1">
+            <div className="font-headline-lg text-headline-lg flex items-baseline gap-unit m-0 mt-1">
               <span className="text-2xl font-bold">Rp</span>
               <span>1.450.000</span>
             </div>

@@ -195,7 +195,7 @@ export default function FeeMasterPage() {
       {/* Page Header */}
       <div className="flex justify-between items-end mb-8 mt-2">
         <div>
-          <h1 className="font-display text-display text-primary mb-2 m-0">Master Biaya</h1>
+          <h1 className="font-headline-lg text-headline-lg text-primary mb-2 m-0">Master Biaya</h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant m-0">Kelola dan definisikan seluruh struktur biaya sekolah.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -262,7 +262,7 @@ export default function FeeMasterPage() {
           </div>
           <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2 m-0">Total Biaya Aktif</p>
           <div className="flex items-baseline gap-2">
-            <h3 className="font-display text-3xl text-primary font-bold m-0">{summary?.activeFees ?? '-'}</h3>
+            <h3 className="text-2xl font-bold text-primary font-bold m-0">{summary?.activeFees ?? '-'}</h3>
           </div>
         </div>
         <div className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant shadow-sm relative overflow-hidden group">
@@ -271,7 +271,7 @@ export default function FeeMasterPage() {
           </div>
           <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2 m-0">Est. Pendapatan Rutin</p>
           <div className="flex items-baseline gap-2">
-            <h3 className="font-display text-2xl text-primary font-bold tracking-tight m-0">{formatRupiah(summary?.estimatedMonthlyRevenue)}</h3>
+            <h3 className="text-xl font-bold text-primary font-bold tracking-tight m-0">{formatRupiah(summary?.estimatedMonthlyRevenue)}</h3>
             <span className="font-body-md text-body-md text-on-surface-variant text-xs">/ bulan</span>
           </div>
         </div>
@@ -281,7 +281,7 @@ export default function FeeMasterPage() {
           </div>
           <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2 m-0">Biaya Sekali Bayar</p>
           <div className="flex items-baseline gap-2">
-            <h3 className="font-display text-3xl text-primary font-bold m-0">{summary?.oneTimeFees ?? '-'}</h3>
+            <h3 className="text-2xl font-bold text-primary font-bold m-0">{summary?.oneTimeFees ?? '-'}</h3>
           </div>
         </div>
       </div>
@@ -330,7 +330,7 @@ export default function FeeMasterPage() {
               {/* Card Body */}
               <div className="px-5 pb-3">
                 <div className="flex items-baseline gap-1 mb-3">
-                  <span className="font-display text-2xl text-primary font-bold font-tabular-nums tracking-tight">
+                  <span className="text-xl font-bold text-primary font-bold font-tabular-nums tracking-tight">
                     {formatRupiah(fee.amount)}
                   </span>
                   <span className="text-on-surface-variant text-xs">

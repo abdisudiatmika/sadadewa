@@ -191,7 +191,7 @@ export default function POSPage() {
           ) : (
             <div className="mt-4">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-title-md text-on-surface m-0">Top 15 Penunggak Terbesar</h3>
+                <h3 className="text-lg font-semibold text-on-surface m-0">Top 15 Penunggak Terbesar</h3>
                 <span className="font-label-md text-on-surface-variant bg-surface-container px-2 py-1 rounded-md">Urut berdasarkan jumlah terbesar</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -208,13 +208,13 @@ export default function POSPage() {
                         {s.initials}
                       </div>
                       <div className="overflow-hidden">
-                        <p className="font-body-sm text-on-surface font-bold m-0 truncate">{s.studentName}</p>
-                        <p className="font-label-sm text-on-surface-variant m-0 truncate">{s.className}</p>
+                        <p className="text-sm text-on-surface font-semibold m-0 truncate">{s.studentName}</p>
+                        <p className="text-xs text-on-surface-variant m-0 truncate">{s.className}</p>
                       </div>
                     </div>
                     <div className="mt-auto pt-2 border-t border-outline-variant/30 flex justify-between items-center">
-                      <span className="font-label-sm text-on-surface-variant">Tunggakan:</span>
-                      <span className="font-tabular-nums text-tabular-nums text-error font-bold">{formatRupiah(s.totalArrears)}</span>
+                      <span className="text-xs text-on-surface-variant">Tunggakan:</span>
+                      <span className="text-sm text-error font-bold">{formatRupiah(s.totalArrears)}</span>
                     </div>
                   </button>
                 ))}
@@ -356,7 +356,7 @@ export default function POSPage() {
 
             <div className="flex justify-between items-end mb-6">
               <span className="font-headline-lg text-headline-lg text-on-background">Total</span>
-              <span className="font-display text-display text-primary font-bold font-tabular-nums tracking-tight">{formatRupiah(total)}</span>
+              <span className="font-headline-lg text-headline-lg text-primary font-bold font-tabular-nums tracking-tight">{formatRupiah(total)}</span>
             </div>
 
             <button

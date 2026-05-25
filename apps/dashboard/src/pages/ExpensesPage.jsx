@@ -66,7 +66,7 @@ export default function ExpensesPage() {
     <div className="flex-1 flex flex-col gap-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="font-display text-display text-on-surface m-0">Pengeluaran Kas</h2>
+          <h2 className="font-headline-lg text-headline-lg text-on-surface m-0">Pengeluaran Kas</h2>
           <p className="font-body-lg text-body-lg text-on-surface-variant mt-1 m-0">
             Catat dan pantau seluruh transaksi pengeluaran operasional sekolah.
           </p>

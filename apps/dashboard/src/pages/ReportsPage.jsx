@@ -271,7 +271,7 @@ export default function ReportsPage() {
     <div className="flex-1 flex flex-col gap-6">
       <div className="flex flex-wrap justify-between items-center gap-4">
         <div>
-          <h2 className="font-display text-display text-on-surface m-0">Laporan Keuangan</h2>
+          <h2 className="font-headline-lg text-headline-lg text-on-surface m-0">Laporan Keuangan</h2>
           <p className="font-body-lg text-body-lg text-on-surface-variant mt-1 m-0">
             Pusat kendali laporan pemasukan, tunggakan, dan rekapitulasi data keuangan.
           </p>
