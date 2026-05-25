@@ -9,9 +9,9 @@ export default function DashboardLayout() {
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
-      <div className="flex-1 flex flex-col ml-[280px] h-screen">
+      <div className="flex-1 flex flex-col ml-[280px] h-screen overflow-hidden">
         <TopNav />
-        <main className={`flex-1 flex flex-col ${isPos ? 'overflow-hidden bg-background' : 'p-container-padding gap-card-gap overflow-y-auto'}`}>
+        <main className={`flex-1 flex flex-col min-h-0 ${isPos ? 'overflow-hidden bg-background' : 'p-container-padding gap-card-gap overflow-y-auto'}`}>
           <Outlet />
         </main>
       </div>
