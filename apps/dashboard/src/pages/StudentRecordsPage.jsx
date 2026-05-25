@@ -38,6 +38,7 @@ export default function StudentRecordsPage() {
   const [classesList, setClassesList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [filterClassId, setFilterClassId] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
   const [meta, setMeta] = useState({ total: 0, totalPages: 1 });
@@ -58,7 +59,12 @@ export default function StudentRecordsPage() {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const res = await api.getStudents({ page, perPage, search: search || undefined });
+      const res = await api.getStudents({
+        page,
+        perPage,
+        search: search || undefined,
+        classId: filterClassId || undefined,
+      });
       setStudents(res.data || []);
       setMeta({ total: res.meta?.total || 0, totalPages: res.meta?.totalPages || 1 });
     } catch (err) {
@@ -68,14 +74,23 @@ export default function StudentRecordsPage() {
     }
   };
 
-  useEffect(() => { 
-    fetchStudents(); 
+  useEffect(() => {
     api.getClasses().then(res => setClassesList(res.data || [])).catch(console.error);
     api.getAcademicYears().then(res => setAcademicYearsList(res.data || [])).catch(console.error);
-  }, [page, perPage]);
+  }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => { setPage(1); fetchStudents(); }, 400);
+    fetchStudents();
+  }, [page, perPage, filterClassId]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (page === 1) {
+        fetchStudents();
+      } else {
+        setPage(1);
+      }
+    }, 400);
     return () => clearTimeout(timer);
   }, [search]);
 
@@ -165,11 +180,14 @@ export default function StudentRecordsPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === students.length) {
-      setSelectedIds(new Set());
+    const allCurrentSelected = students.length > 0 && students.every(s => selectedIds.has(s.id));
+    const newSet = new Set(selectedIds);
+    if (allCurrentSelected) {
+      students.forEach(s => newSet.delete(s.id));
     } else {
-      setSelectedIds(new Set(students.map(s => s.id)));
+      students.forEach(s => newSet.add(s.id));
     }
+    setSelectedIds(newSet);
   };
 
   const handlePromote = async (e) => {
@@ -405,6 +423,24 @@ export default function StudentRecordsPage() {
               />
             </div>
             <div className="flex items-center gap-2">
+              <label className="font-label-sm text-on-surface-variant whitespace-nowrap hidden sm:block">Kelas:</label>
+              <select 
+                className="h-10 px-3 bg-surface border border-outline-variant rounded-lg font-body-md text-on-surface focus:outline-none focus:border-secondary cursor-pointer"
+                value={filterClassId}
+                onChange={(e) => {
+                  setFilterClassId(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">Semua Kelas</option>
+                {classesList.map(cls => (
+                  <option key={cls.id} value={cls.id}>
+                    {cls.grade?.name} {cls.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
               <label className="font-label-sm text-on-surface-variant whitespace-nowrap hidden sm:block">Show:</label>
               <select 
                 className="h-10 px-3 bg-surface border border-outline-variant rounded-lg font-body-md text-on-surface focus:outline-none focus:border-secondary cursor-pointer"
@@ -440,7 +476,7 @@ export default function StudentRecordsPage() {
                     <input 
                       type="checkbox" 
                       className="rounded text-secondary focus:ring-secondary cursor-pointer"
-                      checked={students.length > 0 && selectedIds.size === students.length}
+                      checked={students.length > 0 && students.every(s => selectedIds.has(s.id))}
                       onChange={toggleSelectAll}
                     />
                   </th>
