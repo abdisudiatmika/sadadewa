@@ -131,16 +131,33 @@ export default function FeeMasterPage() {
       }
 
       const records = [];
-      const excludedColumns = ['no', 'nisn', 'nama', 'nama siswa', 'harus bayar', 'total'];
       
       jsonData.forEach(row => {
-        const nisn = String(row.nisn || row.NISN || "").trim();
+        // Cari kolom NISN yang mungkin ada spasi atau beda huruf besar/kecil
+        const nisnKey = Object.keys(row).find(k => k.toLowerCase().trim() === 'nisn');
+        const nisn = nisnKey ? String(row[nisnKey]).trim() : '';
+        
         if (!nisn) return;
         
         Object.keys(row).forEach(key => {
           const lowerKey = key.toLowerCase().trim();
-          if (!excludedColumns.includes(lowerKey)) {
-            const amount = Number(row[key] || 0);
+          
+          // Abaikan kolom data diri & total
+          if (
+            lowerKey !== 'no' &&
+            lowerKey !== 'nisn' &&
+            lowerKey !== 'nama' &&
+            lowerKey !== 'nama siswa' &&
+            lowerKey !== 'total' &&
+            !lowerKey.startsWith('harus')
+          ) {
+            // Bersihkan string dari format uang (titik, koma, Rp, dll)
+            let rawValue = row[key];
+            if (typeof rawValue === 'string') {
+               rawValue = rawValue.replace(/[^0-9]/g, '');
+            }
+            const amount = Number(rawValue || 0);
+            
             if (amount > 0) {
               records.push({
                 nisn: nisn,
