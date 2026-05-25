@@ -227,6 +227,24 @@ export default function FeeMasterPage() {
               {uploadingArrears ? 'Memproses...' : 'Upload Tunggakan'}
               <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleArrearsUpload} disabled={uploadingArrears} />
             </label>
+            <div className="w-[1px] bg-secondary/20"></div>
+            <button 
+              onClick={async () => {
+                if (!confirm('Apakah Anda yakin ingin menghapus SEMUA data tunggakan (unpaid/overdue)?\n\nData yang sudah berstatus "paid" (lunas) TIDAK akan terhapus.\n\nAnda bisa mengupload ulang setelahnya.')) return;
+                try {
+                  const res = await api.resetArrears();
+                  alert(`Berhasil menghapus ${res.data.deletedItems} data tunggakan!`);
+                  fetchData();
+                } catch (err) {
+                  alert('Gagal menghapus tunggakan: ' + err.message);
+                }
+              }}
+              className="px-4 py-2.5 hover:bg-on-secondary-container/10 transition-colors flex items-center gap-2 font-label-lg text-error"
+              title="Hapus semua tunggakan lalu upload ulang"
+            >
+              <span className="material-symbols-outlined text-[20px]">delete_sweep</span>
+              Reset
+            </button>
           </div>
           
           <button onClick={() => openModal()} className="font-body-md text-body-md bg-[#0D9488] text-white px-5 py-2.5 rounded-lg hover:bg-[#0F766E] transition-colors duration-200 flex items-center gap-2 shadow-sm font-medium">

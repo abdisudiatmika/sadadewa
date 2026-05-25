@@ -107,4 +107,14 @@ router.post("/bulk-arrears", async (req: Request, res: Response) => {
   }
 });
 
+// DELETE /api/billing/reset-arrears - Reset all uploaded arrears
+router.delete("/reset-arrears", async (_req: Request, res: Response) => {
+  try {
+    const result = await billingService.resetArrears();
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

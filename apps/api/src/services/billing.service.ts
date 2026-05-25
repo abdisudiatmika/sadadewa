@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { billingItems, feeTemplates, academicYears, students } from "../db/schema.js";
-import { eq, and, count } from "drizzle-orm";
+import { eq, and, or, count, inArray, sql } from "drizzle-orm";
 
 export class BillingService {
   /**
@@ -188,13 +188,33 @@ export class BillingService {
         academicYearId: currentYearId,
         billingYear: new Date().getFullYear(),
         amount: record.amount,
-        status: "unpaid",
+        status: "overdue",
       });
 
       importedCount++;
     }
 
     return { imported: importedCount };
+  }
+
+  /**
+   * Reset (hapus) semua data tunggakan yang diupload via Excel.
+   */
+  async resetArrears() {
+    // Hapus semua billing items yang berstatus unpaid atau overdue
+    const deleted = await db
+      .delete(billingItems)
+      .where(or(eq(billingItems.status, "unpaid"), eq(billingItems.status, "overdue")))
+      .returning();
+
+    // Hapus fee templates one_time yang sudah tidak punya billing items lagi
+    const orphanTemplates = await db.execute(sql`
+      DELETE FROM fee_templates 
+      WHERE category = 'one_time' 
+      AND id NOT IN (SELECT DISTINCT fee_template_id FROM billing_items)
+    `);
+
+    return { deletedItems: deleted.length };
   }
 }
 
