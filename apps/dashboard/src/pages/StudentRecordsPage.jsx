@@ -60,7 +60,7 @@ export default function StudentRecordsPage() {
     try {
       const res = await api.getStudents({ page, perPage, search: search || undefined });
       setStudents(res.data || []);
-      setMeta({ total: res.total || 0, totalPages: res.totalPages || 1 });
+      setMeta({ total: res.meta?.total || 0, totalPages: res.meta?.totalPages || 1 });
     } catch (err) {
       console.error('Failed to fetch students:', err);
     } finally {
