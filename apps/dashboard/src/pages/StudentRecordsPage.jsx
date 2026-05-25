@@ -214,7 +214,7 @@ export default function StudentRecordsPage() {
 
       // Pastikan format isiannya string dan trim spasi berlebih
       const records = jsonData.map(row => {
-        const rawClassStr = String(row.gradeAndClass || "").trim().toLowerCase();
+        const rawClassStr = String(row.gradeAndClass || row.KELAS || row.Kelas || row.kelas || "").trim().toLowerCase();
         let matchedClassId = null;
         
         if (rawClassStr) {
@@ -227,19 +227,26 @@ export default function StudentRecordsPage() {
         }
 
         return {
-          studentCode: String(row.studentCode || "").trim(),
-          nisn: String(row.nisn || "").trim(),
-          fullName: String(row.fullName || "").trim(),
+          studentCode: String(row.studentCode || row.StudentCode || "").trim(),
+          nisn: String(row.nisn || row.NISN || row.Nisn || "").trim(),
+          fullName: String(row.fullName || row.NAMA || row.Nama || row.nama || "").trim(),
           classId: matchedClassId,
-          guardianName: String(row.guardianName || "").trim(),
-          guardianPhone: String(row.guardianPhone || "").trim(),
-          guardianEmail: String(row.guardianEmail || "").trim(),
-          status: String(row.status || "active").toLowerCase()
+          guardianName: String(row.guardianName || row['NAMA AYAH'] || row['Nama Ayah'] || "").trim(),
+          guardianPhone: String(row.guardianPhone || row.GuardianPhone || row.NoHP || "").trim(),
+          guardianEmail: String(row.guardianEmail || row.GuardianEmail || "").trim(),
+          status: (() => {
+            const s = String(row.status || row.Status || "active").trim().toLowerCase();
+            if (s === "aktif") return "active";
+            if (s === "tidak aktif") return "inactive";
+            if (s === "lulus") return "graduated";
+            if (s === "skorsing") return "suspended";
+            return ["active", "inactive", "suspended", "graduated"].includes(s) ? s : "active";
+          })()
         };
       }).filter(r => r.studentCode && r.fullName); // Abaikan baris jika tidak ada nama/kode
 
       if (records.length === 0) {
-        throw new Error("Tidak menemukan data valid untuk diunggah.");
+        throw new Error("Tidak menemukan data valid untuk diunggah. Pastikan kolom 'studentCode' dan 'NAMA' (atau 'fullName') terisi.");
       }
 
       const res = await api.bulkUploadStudents(records);
