@@ -197,14 +197,42 @@ export default function ReportsPage() {
         'Total': tx.total
       }));
     } else if (activeTab === 'delinquency') {
-      exportData = data.map(it => ({
-        'NISN': it.student?.nisn,
-        'Nama Siswa': it.student?.fullName,
-        'Kelas': `${it.student?.class?.grade?.name} ${it.student?.class?.name}`,
-        'Item Tagihan': it.feeTemplate?.name,
-        'Periode': `${monthNames[it.billingMonth]} ${it.billingYear}`,
-        'Nominal': it.amount
-      }));
+      const feeTypes = [...new Set(data.map(it => it.feeTemplate?.name).filter(Boolean))];
+      
+      const groupedData = data.reduce((acc, it) => {
+        const studentId = it.student?.id;
+        if (!acc[studentId]) {
+          acc[studentId] = {
+            NISN: it.student?.nisn || '-',
+            NAMA: it.student?.fullName || '-',
+          };
+          feeTypes.forEach(ft => acc[studentId][ft] = 0);
+          acc[studentId]['HARUS BAYAR'] = 0;
+        }
+        
+        const feeName = it.feeTemplate?.name;
+        if (feeName) {
+          acc[studentId][feeName] += Number(it.amount || 0);
+          acc[studentId]['HARUS BAYAR'] += Number(it.amount || 0);
+        }
+        
+        return acc;
+      }, {});
+
+      exportData = Object.values(groupedData).map((row, index) => {
+        const newRow = {
+          'NO': index + 1,
+          'NISN': row.NISN,
+          'NAMA': row.NAMA,
+        };
+        
+        feeTypes.forEach(ft => {
+          newRow[ft] = row[ft] || 0;
+        });
+        
+        newRow['HARUS BAYAR'] = row['HARUS BAYAR'];
+        return newRow;
+      });
     } else if (activeTab === 'student_ledger' && data?.billingItems) {
       exportData = data.billingItems.map(it => ({
         'Item': it.feeTemplate?.name,
