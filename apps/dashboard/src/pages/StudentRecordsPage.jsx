@@ -307,19 +307,19 @@ export default function StudentRecordsPage() {
   return (
     <>
       {/* Page Header */}
-      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+      <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
         <div>
-          <h2 className="font-headline-lg text-headline-lg text-on-background mb-1 m-0">Master Siswa</h2>
-          <p className="font-body-md text-body-md text-on-surface-variant m-0">Manage and organize student records, grades, and administrative data.</p>
+          <h2 className="text-xl font-bold text-on-background mb-0.5 m-0">Master Siswa</h2>
+          <p className="text-xs text-on-surface-variant m-0">Kelola dan atur data siswa serta administrasi kelas.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="bg-surface border border-outline px-4 py-2.5 rounded-lg font-body-md text-body-md font-medium text-on-surface hover:bg-surface-container transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px]">download</span>
+        <div className="flex items-center gap-2">
+          <button className="bg-surface border border-outline px-3.5 py-1.5 rounded-lg font-body-md text-sm font-medium text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[18px]">download</span>
             Export Excel
           </button>
           <button
             onClick={openCreateModal}
-            className="bg-[#0D9488] text-white px-5 py-2.5 rounded-lg hover:bg-[#0F766E] transition-colors flex items-center gap-2 shadow-sm font-medium font-body-md"
+            className="bg-[#0D9488] text-white px-4 py-1.5 rounded-lg hover:bg-[#0F766E] transition-colors flex items-center gap-1.5 shadow-sm font-medium text-sm"
           >
             <span className="material-symbols-outlined text-[20px]">person_add</span>
             Tambah Siswa
@@ -360,18 +360,18 @@ export default function StudentRecordsPage() {
       )}
 
       {/* Import Excel Dropzone (Compact) */}
-      <div className="mb-card-gap bg-surface-container-lowest border border-dashed border-outline-variant rounded-xl p-5 flex flex-col md:flex-row items-center justify-between cursor-pointer hover:bg-surface-container-low hover:border-secondary transition-all group">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-            <span className="material-symbols-outlined text-on-secondary-container text-[20px]">upload_file</span>
+      <div className="mb-4 bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg p-3 flex flex-col md:flex-row items-center justify-between cursor-pointer hover:bg-surface-container-low hover:border-secondary transition-all group">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-secondary-container rounded-full flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+            <span className="material-symbols-outlined text-on-secondary-container text-[18px]">upload_file</span>
           </div>
           <div>
-            <h3 className="font-title-md text-title-md text-on-surface mb-0.5 m-0">Upload Bulk Student Data</h3>
-            <p className="font-body-sm text-body-sm text-on-surface-variant m-0">Drag and drop your Excel (.xlsx) file here, or click to browse.</p>
+            <h3 className="text-sm font-bold text-on-surface m-0">Import Siswa dari Excel</h3>
+            <p className="text-xs text-on-surface-variant m-0">Pilih file Excel (.xlsx) untuk upload data siswa secara masal.</p>
           </div>
         </div>
-        <div className="flex gap-3 mt-4 md:mt-0">
-          <button onClick={handleDownloadTemplate} className="bg-surface border border-outline px-4 py-1.5 rounded-lg font-body-sm text-body-sm font-medium text-on-surface hover:bg-surface-container transition-colors">Download Template</button>
+        <div className="flex gap-2 mt-2 md:mt-0">
+          <button onClick={handleDownloadTemplate} className="bg-surface border border-outline px-3 py-1 rounded-md text-xs font-medium text-on-surface hover:bg-surface-container transition-colors">Download Template</button>
           
           <input 
             type="file" 
@@ -382,9 +382,9 @@ export default function StudentRecordsPage() {
           />
           <button 
             onClick={() => fileInputRef.current?.click()} 
-            className="bg-primary text-on-primary px-4 py-1.5 rounded-lg font-body-sm text-body-sm font-medium hover:bg-on-background transition-colors"
+            className="bg-primary text-on-primary px-3 py-1 rounded-md text-xs font-medium hover:bg-on-background transition-colors"
           >
-            Select File
+            Pilih File
           </button>
         </div>
       </div>
@@ -427,16 +427,16 @@ export default function StudentRecordsPage() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto overflow-y-auto max-h-[60vh] relative">
+        <div className="overflow-x-auto overflow-y-auto max-h-[48vh] relative">
           {loading ? (
-            <div className="flex items-center justify-center py-16">
+            <div className="flex items-center justify-center py-12">
               <span className="material-symbols-outlined text-secondary text-4xl animate-spin">progress_activity</span>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse text-sm">
               <thead className="bg-surface-container border-b border-outline-variant sticky top-0 z-10 shadow-sm">
                 <tr>
-                  <th className="py-3 px-4 w-12">
+                  <th className="py-1.5 px-3 w-10">
                     <input 
                       type="checkbox" 
                       className="rounded text-secondary focus:ring-secondary cursor-pointer"
@@ -444,13 +444,13 @@ export default function StudentRecordsPage() {
                       onChange={toggleSelectAll}
                     />
                   </th>
-                  <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">Student ID</th>
-                  <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">Full Name</th>
-                  <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">NISN</th>
-                  <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">Grade & Class (Aktif)</th>
-                  <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium">Guardian Contact</th>
-                  <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium text-center">Status</th>
-                  <th className="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-medium text-right">Actions</th>
+                  <th className="py-1.5 px-3 font-medium text-on-surface-variant">Student ID</th>
+                  <th className="py-1.5 px-3 font-medium text-on-surface-variant">Full Name</th>
+                  <th className="py-1.5 px-3 font-medium text-on-surface-variant">NISN</th>
+                  <th className="py-1.5 px-3 font-medium text-on-surface-variant">Grade & Class (Aktif)</th>
+                  <th className="py-1.5 px-3 font-medium text-on-surface-variant">Guardian Contact</th>
+                  <th className="py-1.5 px-3 font-medium text-on-surface-variant text-center">Status</th>
+                  <th className="py-1.5 px-3 font-medium text-on-surface-variant text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
@@ -463,7 +463,7 @@ export default function StudentRecordsPage() {
                 ) : (
                   students.map((student, i) => (
                     <tr key={student.id} className={`hover:bg-surface-container-low transition-colors group ${i % 2 !== 0 ? 'bg-surface' : ''} ${selectedIds.has(student.id) ? 'bg-tertiary-container/20' : ''}`}>
-                      <td className="py-4 px-4">
+                      <td className="py-1.5 px-3">
                         <input 
                           type="checkbox" 
                           className="rounded text-secondary focus:ring-secondary cursor-pointer"
@@ -471,46 +471,46 @@ export default function StudentRecordsPage() {
                           onChange={() => toggleSelect(student.id)}
                         />
                       </td>
-                      <td className="py-4 px-4 font-tabular-nums text-tabular-nums text-on-surface">{student.studentCode}</td>
-                      <td className="py-4 px-4">
+                      <td className="py-1.5 px-3 font-tabular-nums text-tabular-nums text-on-surface">{student.studentCode}</td>
+                      <td className="py-1.5 px-3">
                         <Link 
                           to={`/billing?studentId=${student.id}`}
-                          className="flex items-center gap-3 group/link hover:bg-secondary-container/30 p-1 -m-1 rounded-lg transition-colors"
+                          className="flex items-center gap-2 group/link hover:bg-secondary-container/30 p-0.5 -m-0.5 rounded-lg transition-colors"
                         >
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-headline-md text-[14px] ${avatarColors[i % avatarColors.length]}`}>
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px] ${avatarColors[i % avatarColors.length]}`}>
                             {getInitials(student.fullName)}
                           </div>
-                          <span className="font-body-md text-body-md text-on-surface font-medium group-hover/link:text-secondary group-hover/link:underline decoration-2 underline-offset-4 decoration-secondary/30">
+                          <span className="text-on-surface font-medium group-hover/link:text-secondary group-hover/link:underline decoration-2 underline-offset-4 decoration-secondary/30">
                             {student.fullName}
                           </span>
                         </Link>
                       </td>
-                      <td className="py-4 px-4 font-tabular-nums text-tabular-nums text-on-surface-variant">{student.nisn}</td>
-                      <td className="py-4 px-4 font-body-md text-body-md text-on-surface">
+                      <td className="py-1.5 px-3 font-tabular-nums text-tabular-nums text-on-surface-variant">{student.nisn}</td>
+                      <td className="py-1.5 px-3">
                         {student.grade?.name || ''} {student.class?.name || ''}
                       </td>
-                      <td className="py-4 px-4 font-tabular-nums text-tabular-nums text-on-surface-variant">
+                      <td className="py-1.5 px-3 font-tabular-nums text-tabular-nums text-on-surface-variant">
                         {student.guardianPhone || '-'}
                       </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full font-label-md text-label-md capitalize ${statusColors[student.status] || 'bg-surface-variant text-on-surface-variant'}`}>
+                      <td className="py-1.5 px-3 text-center">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs capitalize ${statusColors[student.status] || 'bg-surface-variant text-on-surface-variant'}`}>
                           {student.status}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-right">
+                      <td className="py-1.5 px-3 text-right">
                         <button
-                          className="p-1.5 text-on-surface-variant hover:text-secondary rounded-md hover:bg-surface-container transition-colors"
+                          className="p-1 text-on-surface-variant hover:text-secondary rounded-md hover:bg-surface-container transition-colors"
                           title="Edit"
                           onClick={() => openEditModal(student)}
                         >
-                          <span className="material-symbols-outlined text-[20px]">edit</span>
+                          <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                         <button
-                          className="p-1.5 text-on-surface-variant hover:text-error rounded-md hover:bg-error-container transition-colors"
+                          className="p-1 text-on-surface-variant hover:text-error rounded-md hover:bg-error-container transition-colors"
                           title="Delete"
                           onClick={() => handleDelete(student)}
                         >
-                          <span className="material-symbols-outlined text-[20px]">delete</span>
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
                         </button>
                       </td>
                     </tr>
