@@ -348,7 +348,7 @@ export class StudentService {
   }
 
   /**
-   * Bulk create students from parsed spreadsheet data.
+   * Bulk create students from parsed spreadsheet data (inserts or updates existing).
    */
   async bulkCreate(
     records: Array<{
@@ -359,6 +359,7 @@ export class StudentService {
       guardianName?: string;
       guardianPhone?: string;
       guardianEmail?: string;
+      status?: string;
     }>
   ) {
     if (records.length === 0) return [];
@@ -366,10 +367,29 @@ export class StudentService {
     const results = [];
     for (const r of records) {
       try {
-        const student = await this.create(r);
-        results.push(student);
+        // Cari siswa yang sudah ada berdasarkan NISN atau kode siswa
+        const conditions = [eq(students.nisn, r.nisn)];
+        if (r.studentCode) {
+          conditions.push(eq(students.studentCode, r.studentCode));
+        }
+
+        const existing = await db.query.students.findFirst({
+          where: or(...conditions),
+        });
+
+        if (existing) {
+          // Jika siswa sudah ada, update kelas dan data lainnya
+          const student = await this.update(existing.id, r);
+          if (student) {
+            results.push(student);
+          }
+        } else {
+          // Jika siswa belum ada, buat baru
+          const student = await this.create(r);
+          results.push(student);
+        }
       } catch (err) {
-        console.error(`Failed to create student ${r.fullName}:`, err);
+        console.error(`Failed to process student ${r.fullName}:`, err);
       }
     }
 
