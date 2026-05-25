@@ -88,13 +88,26 @@ export default function FeeMasterPage() {
 
   const handleDownloadTemplate = () => {
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE || '';
-      const link = document.createElement('a');
-      link.href = `${API_BASE}/api/billing/template-arrears`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const feeNames = fees.map(f => f.name);
+      const templateData = [{
+        'NO': 1,
+        'NISN': '1234567890',
+        'NAMA': 'Contoh Siswa',
+      }];
+      
+      let total = 0;
+      feeNames.forEach(name => {
+        const exampleAmount = 150000;
+        templateData[0][name] = exampleAmount;
+        total += exampleAmount;
+      });
+      
+      templateData[0]['HARUS BAYAR'] = total;
+      
+      const ws = XLSX.utils.json_to_sheet(templateData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Template_Tunggakan");
+      XLSX.writeFile(wb, `Template_Upload_Tunggakan.xlsx`);
     } catch (err) {
       console.error('Failed to download template', err);
     }
@@ -117,16 +130,30 @@ export default function FeeMasterPage() {
         throw new Error("File Excel kosong atau tidak valid.");
       }
 
-      const records = jsonData.map(row => {
-        return {
-          nisn: String(row.nisn || row.NISN || "").trim(),
-          billName: String(row.namaTagihan || row['Nama Tagihan'] || "Tunggakan Lama").trim(),
-          amount: Number(row.nominal || row.Nominal || 0)
-        };
-      }).filter(r => r.nisn && r.amount > 0);
+      const records = [];
+      const excludedColumns = ['no', 'nisn', 'nama', 'nama siswa', 'harus bayar', 'total'];
+      
+      jsonData.forEach(row => {
+        const nisn = String(row.nisn || row.NISN || "").trim();
+        if (!nisn) return;
+        
+        Object.keys(row).forEach(key => {
+          const lowerKey = key.toLowerCase().trim();
+          if (!excludedColumns.includes(lowerKey)) {
+            const amount = Number(row[key] || 0);
+            if (amount > 0) {
+              records.push({
+                nisn: nisn,
+                billName: key.trim(),
+                amount: amount
+              });
+            }
+          }
+        });
+      });
 
       if (records.length === 0) {
-        throw new Error("Tidak menemukan data tunggakan valid untuk diunggah.");
+        throw new Error("Tidak menemukan data tunggakan valid untuk diunggah. Pastikan kolom nama tagihan memiliki nominal > 0.");
       }
 
       const res = await api.bulkUploadArrears(records);
