@@ -463,7 +463,7 @@ export default function StudentRecordsPage() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto overflow-y-auto max-h-[48vh] relative">
+        <div className="overflow-x-auto relative">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <span className="material-symbols-outlined text-secondary text-4xl animate-spin">progress_activity</span>
