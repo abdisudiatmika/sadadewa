@@ -213,15 +213,15 @@ export default function FeeMasterPage() {
           <div className="flex bg-secondary-container text-on-secondary-container rounded-lg border border-secondary/20 overflow-hidden shadow-sm">
             <button 
               onClick={handleDownloadTemplate}
-              className="px-4 py-2.5 hover:bg-on-secondary-container/10 transition-colors flex items-center gap-2 font-label-lg"
+              className="px-3 py-2 hover:bg-on-secondary-container/10 transition-colors flex items-center gap-1.5 text-sm font-medium whitespace-nowrap"
               title="Download Template Excel"
             >
-              <span className="material-symbols-outlined text-[20px]">download</span>
+              <span className="material-symbols-outlined text-[18px]">download</span>
               Template
             </button>
             <div className="w-[1px] bg-secondary/20"></div>
-            <label className={`px-4 py-2.5 font-label-lg hover:bg-on-secondary-container/10 transition-colors cursor-pointer flex items-center gap-2 ${uploadingArrears ? 'opacity-50 pointer-events-none' : ''}`}>
-              <span className={`material-symbols-outlined text-[20px] ${uploadingArrears ? 'animate-spin' : ''}`}>
+            <label className={`px-3 py-2 hover:bg-on-secondary-container/10 transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-medium whitespace-nowrap ${uploadingArrears ? 'opacity-50 pointer-events-none' : ''}`}>
+              <span className={`material-symbols-outlined text-[18px] ${uploadingArrears ? 'animate-spin' : ''}`}>
                 {uploadingArrears ? 'progress_activity' : 'upload_file'}
               </span>
               {uploadingArrears ? 'Memproses...' : 'Upload Tunggakan'}
@@ -239,16 +239,16 @@ export default function FeeMasterPage() {
                   alert('Gagal menghapus tunggakan: ' + err.message);
                 }
               }}
-              className="px-4 py-2.5 hover:bg-on-secondary-container/10 transition-colors flex items-center gap-2 font-label-lg text-error"
+              className="px-3 py-2 hover:bg-on-secondary-container/10 transition-colors flex items-center gap-1.5 text-sm font-medium whitespace-nowrap text-error"
               title="Hapus semua tunggakan lalu upload ulang"
             >
-              <span className="material-symbols-outlined text-[20px]">delete_sweep</span>
+              <span className="material-symbols-outlined text-[18px]">delete_sweep</span>
               Reset
             </button>
           </div>
           
-          <button onClick={() => openModal()} className="font-body-md text-body-md bg-[#0D9488] text-white px-5 py-2.5 rounded-lg hover:bg-[#0F766E] transition-colors duration-200 flex items-center gap-2 shadow-sm font-medium">
-            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>add_circle</span>
+          <button onClick={() => openModal()} className="text-sm bg-[#0D9488] text-white px-4 py-2 rounded-lg hover:bg-[#0F766E] transition-colors duration-200 flex items-center gap-1.5 shadow-sm font-medium whitespace-nowrap">
+            <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>add_circle</span>
             Tambah Biaya Baru
           </button>
         </div>
