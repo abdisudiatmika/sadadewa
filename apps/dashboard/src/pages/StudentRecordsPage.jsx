@@ -140,6 +140,23 @@ export default function StudentRecordsPage() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Hapus ${selectedIds.size} siswa terpilih? Status mereka akan diubah menjadi inactive.`)) return;
+    
+    setLoading(true);
+    try {
+      await api.bulkDeleteStudents(Array.from(selectedIds));
+      alert(`✅ Berhasil menghapus ${selectedIds.size} siswa!`);
+      setSelectedIds(new Set());
+      fetchStudents();
+    } catch (err) {
+      alert('Gagal menghapus siswa: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleSelect = (id) => {
     const newSet = new Set(selectedIds);
     if (newSet.has(id)) newSet.delete(id);
@@ -323,6 +340,13 @@ export default function StudentRecordsPage() {
               className="px-4 py-1.5 rounded-lg border border-on-tertiary-container/30 hover:bg-on-tertiary-container/10 transition-colors font-label-md"
             >
               Batal
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="px-4 py-1.5 bg-error-container text-on-error-container hover:opacity-90 rounded-lg shadow-sm font-label-md flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">delete</span>
+              Hapus Masal
             </button>
             <button
               onClick={() => setShowPromoteModal(true)}

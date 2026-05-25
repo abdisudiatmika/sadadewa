@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { students, classes, grades, studentClasses, academicYears } from "../db/schema.js";
-import { eq, ilike, and, or, sql, count } from "drizzle-orm";
+import { eq, ilike, and, or, sql, count, inArray } from "drizzle-orm";
 import { userService } from "./user.service.js";
 
 export class StudentService {
@@ -384,6 +384,19 @@ export class StudentService {
 
     const inserted = await db.insert(studentClasses).values(values).returning();
     return inserted.length;
+  }
+
+  /**
+   * Bulk delete students by setting their status to inactive.
+   */
+  async bulkDelete(ids: string[]) {
+    if (ids.length === 0) return 0;
+    const result = await db
+      .update(students)
+      .set({ status: "inactive", updatedAt: new Date() })
+      .where(inArray(students.id, ids))
+      .returning();
+    return result.length;
   }
 }
 

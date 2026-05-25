@@ -217,4 +217,21 @@ router.post("/promote", async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/students/bulk-delete - Bulk delete students (sets status to inactive)
+router.post("/bulk-delete", async (req: Request, res: Response) => {
+  try {
+    const { studentIds } = req.body;
+    
+    if (!studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
+      res.status(400).json({ success: false, error: "No student IDs provided" });
+      return;
+    }
+    
+    const count = await studentService.bulkDelete(studentIds);
+    res.json({ success: true, data: { deleted: count } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
