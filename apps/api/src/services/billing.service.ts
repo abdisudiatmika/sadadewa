@@ -164,8 +164,8 @@ export class BillingService {
       let templateId = templateCache.get(billNameKey);
 
       if (!templateId) {
-        // Buat kode unik untuk template
-        const code = `ARR-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        // Buat kode unik untuk template (max 20 chars)
+        const code = `ARR-${Date.now().toString().slice(-8)}-${Math.floor(Math.random() * 100)}`;
         const [newTemplate] = await db
           .insert(feeTemplates)
           .values({
