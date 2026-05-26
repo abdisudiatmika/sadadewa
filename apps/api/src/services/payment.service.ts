@@ -4,6 +4,7 @@ import {
   transactions,
   transactionItems,
   discountCodes,
+  students,
 } from "../db/schema.js";
 import { eq, and, inArray, sql, gte } from "drizzle-orm";
 
