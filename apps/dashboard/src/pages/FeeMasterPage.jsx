@@ -27,6 +27,29 @@ export default function FeeMasterPage() {
   const [generating, setGenerating] = useState(false);
   const [classesList, setClassesList] = useState([]);
   const [uploadingArrears, setUploadingArrears] = useState(false);
+  const [targetMode, setTargetMode] = useState('class'); // 'class' or 'student'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const searchRef = useRef(null);
+
+  // Search students for ad-hoc billing
+  useEffect(() => {
+    if (searchQuery.length < 2) { setSearchResults([]); return; }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.searchStudents(searchQuery);
+        setSearchResults(res.data || []);
+      } catch (err) { console.error(err); }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const selectStudent = (student) => {
+    setSelectedStudent(student);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
 
   const openModal = (fee = null) => {
     setEditingFee(fee);
@@ -73,9 +96,16 @@ export default function FeeMasterPage() {
 
   const handleGenerate = async (e) => {
     e.preventDefault();
+    if (targetMode === 'student' && !selectedStudent) {
+      return alert("Pilih siswa terlebih dahulu!");
+    }
     setGenerating(true);
     try {
-      const res = await api.generateBillsFee(generatingFee.id, { classId: selectedClassId || undefined });
+      const payload = targetMode === 'student' 
+        ? { studentId: selectedStudent.id } 
+        : { classId: selectedClassId || undefined };
+        
+      const res = await api.generateBillsFee(generatingFee.id, payload);
       alert(`Berhasil menerbitkan ${res.data.generated} tagihan baru!`);
       setShowGenerateModal(false);
       fetchData();
@@ -359,6 +389,9 @@ export default function FeeMasterPage() {
                   onClick={() => {
                     setGeneratingFee(fee);
                     setSelectedClassId('');
+                    setTargetMode('class');
+                    setSelectedStudent(null);
+                    setSearchQuery('');
                     setShowGenerateModal(true);
                   }}
                 >
@@ -514,24 +547,91 @@ export default function FeeMasterPage() {
             
             <form onSubmit={handleGenerate} className="p-6">
               <p className="font-body-md text-on-surface-variant mb-4 m-0">
-                Terbitkan tagihan <strong>{generatingFee?.name}</strong>. Anda dapat memilih untuk menagihkannya ke semua siswa aktif atau hanya untuk kelas tertentu.
+                Terbitkan tagihan <strong>{generatingFee?.name}</strong>. Anda dapat menagihkannya ke satu siswa saja atau secara global per kelas.
               </p>
               <div className="space-y-4">
-                <div>
-                  <label className="block font-label-md text-on-surface-variant mb-1">Pilih Kelas Target</label>
-                  <select
-                    className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:border-secondary"
-                    value={selectedClassId}
-                    onChange={(e) => setSelectedClassId(e.target.value)}
-                  >
-                    <option value="">Semua Kelas (Global)</option>
-                    {classesList.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.grade?.name} {c.name}
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex gap-4 mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="targetMode" 
+                      checked={targetMode === 'class'} 
+                      onChange={() => setTargetMode('class')}
+                      className="accent-secondary"
+                    />
+                    <span className="font-body-md">Per Kelas / Global</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="targetMode" 
+                      checked={targetMode === 'student'} 
+                      onChange={() => setTargetMode('student')}
+                      className="accent-secondary"
+                    />
+                    <span className="font-body-md">1 Siswa (Ad-hoc)</span>
+                  </label>
                 </div>
+
+                {targetMode === 'class' && (
+                  <div>
+                    <label className="block font-label-md text-on-surface-variant mb-1">Pilih Kelas Target</label>
+                    <select
+                      className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:border-secondary"
+                      value={selectedClassId}
+                      onChange={(e) => setSelectedClassId(e.target.value)}
+                    >
+                      <option value="">Semua Kelas (Global)</option>
+                      {classesList.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.grade?.name} {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {targetMode === 'student' && (
+                  <div className="relative" ref={searchRef}>
+                    <label className="block font-label-md text-on-surface-variant mb-1">Cari Nama Siswa / NISN</label>
+                    {selectedStudent ? (
+                      <div className="flex items-center justify-between p-3 bg-secondary-container text-on-secondary-container rounded-lg">
+                        <div>
+                          <p className="font-bold m-0">{selectedStudent.fullName}</p>
+                          <p className="text-sm m-0 opacity-80">{selectedStudent.nisn} • {selectedStudent.class?.name}</p>
+                        </div>
+                        <button type="button" onClick={() => setSelectedStudent(null)} className="material-symbols-outlined hover:text-error transition-colors">
+                          close
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <input
+                          className="w-full pl-3 pr-4 py-2 bg-surface border border-outline-variant rounded-lg text-body-md focus:outline-none focus:border-secondary"
+                          placeholder="Ketik NISN atau nama siswa..."
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchResults.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+                            {searchResults.map(s => (
+                              <button
+                                key={s.id}
+                                type="button"
+                                className="w-full px-4 py-2 text-left hover:bg-surface-container-low transition-colors border-b border-outline-variant last:border-0"
+                                onClick={() => selectStudent(s)}
+                              >
+                                <p className="font-body-md text-on-surface font-medium m-0">{s.fullName}</p>
+                                <p className="font-label-sm text-on-surface-variant m-0">{s.nisn} • {s.class?.name}</p>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="mt-8 flex justify-end gap-3">

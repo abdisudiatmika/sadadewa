@@ -118,8 +118,8 @@ router.delete("/:id", async (req: Request, res: Response) => {
 // POST /api/fees/:id/generate-bills - Generate billing items for targeted students
 router.post("/:id/generate-bills", async (req: Request, res: Response) => {
   try {
-    const { classId } = req.body;
-    const result = await feeService.generateBills(req.params.id as string, classId);
+    const { classId, studentId } = req.body;
+    const result = await feeService.generateBills(req.params.id as string, { classId, studentId });
     res.json({ success: true, data: result });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });

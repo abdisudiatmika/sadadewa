@@ -199,9 +199,9 @@ export class FeeService {
   }
 
   /**
-   * Generate billing items for all targeted students from a fee template.
+   * Generate billing items for targeted students (by class, grade, or specific student).
    */
-  async generateBills(feeTemplateId: string, classId?: string) {
+  async generateBills(feeTemplateId: string, target?: { classId?: string; studentId?: string }) {
     const template = await this.getById(feeTemplateId);
     if (!template) throw new Error("Fee template not found");
 
@@ -210,8 +210,10 @@ export class FeeService {
       eq(studentClasses.academicYearId, template.academicYearId)
     ];
 
-    if (classId) {
-      studentConditions.push(eq(studentClasses.classId, classId));
+    if (target?.studentId) {
+      studentConditions.push(eq(studentClasses.studentId, target.studentId));
+    } else if (target?.classId) {
+      studentConditions.push(eq(studentClasses.classId, target.classId));
     } else if (template.targetGradeId) {
       const targetClasses = await db
         .select({ id: classes.id })

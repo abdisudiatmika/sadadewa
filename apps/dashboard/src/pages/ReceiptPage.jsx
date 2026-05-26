@@ -53,16 +53,40 @@ export default function ReceiptPage() {
 
   const terbilangText = terbilang(transaction.total).trim() + ' Rupiah';
   
-  // Group fees by name to prevent too long strings if they pay 12 months at once
-  const feeMap = {};
-  transaction.items.forEach(item => {
+  // Group fees or show detailed cicilan information
+  const feeDetails = transaction.items.map(item => {
     const name = item.billingItem?.feeTemplate?.name || 'Tagihan';
-    feeMap[name] = (feeMap[name] || 0) + 1;
+    const billTotal = item.billingItem?.amount || item.amount;
+    const paidAmount = item.amount;
+    
+    // Check if it's an installment
+    const isCicilan = item.billingItem && (item.billingItem.paidAmount < item.billingItem.amount);
+    const sisa = isCicilan ? (item.billingItem.amount - item.billingItem.paidAmount) : 0;
+    
+    if (isCicilan) {
+      return `${name} (Bayar Rp ${paidAmount.toLocaleString('id-ID')}, Sisa Rp ${sisa.toLocaleString('id-ID')})`;
+    } else {
+      return name;
+    }
+  });
+
+  // Count occurrences for fully paid identical items to group them (e.g. SPP (2x))
+  const feeMap = {};
+  const finalFeeStrings = [];
+  
+  feeDetails.forEach(detail => {
+    if (detail.includes('(Bayar Rp')) {
+      finalFeeStrings.push(detail); // Don't group installments
+    } else {
+      feeMap[detail] = (feeMap[detail] || 0) + 1;
+    }
   });
   
-  const feeNames = Object.entries(feeMap).map(([name, count]) => {
-    return count > 1 ? `${name} (${count}x)` : name;
-  }).join(', ');
+  Object.entries(feeMap).forEach(([name, count]) => {
+    finalFeeStrings.push(count > 1 ? `${name} (${count}x)` : name);
+  });
+  
+  const feeNames = finalFeeStrings.join(', ');
 
   // Fix for "Local time stored as UTC" bug: strip 'Z' to treat as local
   const dateObj = new Date(transaction.createdAt.replace('Z', ''));
