@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "../db/index.js";
 import { paymentProofs } from "../db/schema.js";
@@ -9,9 +10,14 @@ import { paymentProofs } from "../db/schema.js";
 const router = Router();
 
 // Configure multer for file storage
+const uploadDir = "uploads/";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Pastikan folder uploads ada
+    cb(null, uploadDir); 
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
