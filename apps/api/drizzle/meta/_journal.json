@@ -15,6 +15,13 @@
       "when": 1779721252642,
       "tag": "0001_zippy_killer_shrike",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779763330772,
+      "tag": "0002_supreme_jazinda",
+      "breakpoints": true
     }
   ]
 }

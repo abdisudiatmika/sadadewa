@@ -49,6 +49,7 @@ export const feeStatusEnum = pgEnum("fee_status", ["active", "inactive"]);
 
 export const billingStatusEnum = pgEnum("billing_status", [
   "paid",
+  "partially_paid",
   "overdue",
   "unpaid",
   "not_billed",
@@ -181,6 +182,7 @@ export const students = pgTable("students", {
   guardianPhone: varchar("guardian_phone", { length: 20 }),
   guardianEmail: varchar("guardian_email", { length: 150 }),
   status: studentStatusEnum("status").notNull().default("active"),
+  balance: integer("balance").notNull().default(0), // Saldo siswa (deposit / overpayment)
   enrolledAt: date("enrolled_at"),
   avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -242,6 +244,7 @@ export const billingItems = pgTable("billing_items", {
   billingMonth: integer("billing_month"),
   billingYear: integer("billing_year").notNull(),
   amount: integer("amount").notNull(),
+  paidAmount: integer("paid_amount").notNull().default(0), // Jumlah yang sudah dibayar (untuk cicilan)
   status: billingStatusEnum("status").notNull().default("unpaid"),
   dueDate: date("due_date"),
   paidAt: timestamp("paid_at"),
@@ -341,6 +344,30 @@ export const expenses = pgTable("expenses", {
   recordedBy: text("recorded_by")
     .notNull()
     .references(() => user.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ---- Payment Proofs (Upload Bukti Transfer) ----
+
+export const paymentProofStatusEnum = pgEnum("payment_proof_status", [
+  "pending",
+  "verified",
+  "rejected",
+]);
+
+export const paymentProofs = pgTable("payment_proofs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  studentName: varchar("student_name", { length: 150 }).notNull(),
+  className: varchar("class_name", { length: 50 }).notNull(),
+  accountOwner: varchar("account_owner", { length: 150 }).notNull(),
+  amount: integer("amount").notNull(),
+  fileUrl: text("file_url").notNull(),
+  status: paymentProofStatusEnum("status").notNull().default("pending"),
+  verifiedBy: text("verified_by").references(() => user.id, {
+    onDelete: "set null",
+  }),
+  verifiedAt: timestamp("verified_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -500,6 +527,13 @@ export const reminderRelations = relations(reminders, ({ one }) => ({
 export const systemSettingRelations = relations(systemSettings, ({ one }) => ({
   user: one(user, {
     fields: [systemSettings.userId],
+    references: [user.id],
+  }),
+}));
+
+export const paymentProofRelations = relations(paymentProofs, ({ one }) => ({
+  verifier: one(user, {
+    fields: [paymentProofs.verifiedBy],
     references: [user.id],
   }),
 }));

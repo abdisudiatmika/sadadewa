@@ -13,10 +13,15 @@ router.use(requireAuth, requireRole("admin", "staff"));
 // POST /api/payments/checkout - Process a POS checkout
 const checkoutSchema = z.object({
   studentId: z.string().uuid(),
-  billingItemIds: z.array(z.string().uuid()).min(1),
+  payments: z.array(z.object({
+    billingItemId: z.string().uuid(),
+    amount: z.number().positive() // Jumlah yang dibayar kasir untuk item ini
+  })).min(1),
   discountCode: z.string().optional(),
-  paymentMethod: z.enum(["cash", "transfer", "qris"]),
+  paymentMethod: z.enum(["cash", "transfer", "qris", "balance"]),
   notes: z.string().optional(),
+  saveToBalance: z.boolean().optional(),
+  useBalance: z.boolean().optional(),
 });
 
 router.post(

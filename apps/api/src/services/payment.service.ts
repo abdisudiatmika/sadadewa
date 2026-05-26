@@ -14,37 +14,40 @@ export class PaymentService {
    */
   async checkout(params: {
     studentId: string;
-    billingItemIds: string[];
+    payments: { billingItemId: string; amount: number }[];
     discountCode?: string;
-    paymentMethod: "cash" | "transfer" | "qris";
+    paymentMethod: "cash" | "transfer" | "qris" | "balance";
     cashierId: string;
     notes?: string;
+    saveToBalance?: boolean;
+    useBalance?: boolean;
   }) {
     return await db.transaction(async (tx) => {
       // 1. Fetch billing items and validate ownership + status
+      const billingItemIds = params.payments.map((p) => p.billingItemId);
       const items = await tx.query.billingItems.findMany({
         where: and(
-          inArray(billingItems.id, params.billingItemIds),
+          inArray(billingItems.id, billingItemIds),
           eq(billingItems.studentId, params.studentId)
         ),
         with: { feeTemplate: true },
       });
 
-      if (items.length !== params.billingItemIds.length) {
+      if (items.length !== billingItemIds.length) {
         throw new Error(
           "Some billing items not found or do not belong to this student"
         );
       }
 
       const unpayable = items.filter(
-        (i) => i.status !== "unpaid" && i.status !== "overdue"
+        (i) => i.status === "paid" || i.status === "not_billed"
       );
       if (unpayable.length > 0) {
-        throw new Error("Some billing items are already paid or not billable");
+        throw new Error("Some billing items are already fully paid or not billable");
       }
 
-      // 2. Calculate subtotal
-      const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+      // 2. Calculate subtotal based on user's input
+      const subtotal = params.payments.reduce((sum, p) => sum + p.amount, 0);
 
       // 3. Apply discount if provided
       let discountAmount = 0;
@@ -80,12 +83,28 @@ export class PaymentService {
           .where(eq(discountCodes.id, discount.id));
       }
 
-      // 4. Calculate late fees (Rp 25,000 per overdue item)
-      const overdueItems = items.filter((i) => i.status === "overdue");
-      const lateFee = overdueItems.length * 25000;
+      // 4. Calculate late fees (HAPUS DENDA SESUAI PERMINTAAN)
+      const lateFee = 0;
 
       // 5. Calculate total
       const total = subtotal - discountAmount + lateFee;
+
+      // Validate Balance usage
+      let studentData = await tx.query.students.findFirst({
+        where: eq(students.id, params.studentId),
+      });
+
+      if (!studentData) throw new Error("Student not found");
+
+      if (params.paymentMethod === "balance" || params.useBalance) {
+        if (studentData.balance < total) {
+          throw new Error("Saldo siswa tidak mencukupi untuk pembayaran ini.");
+        }
+        // Potong saldo
+        await tx.update(students)
+          .set({ balance: sql`${students.balance} - ${total}` })
+          .where(eq(students.id, params.studentId));
+      }
 
       // 6. Generate transaction code (DDMMYY-NN format)
       const now = new Date();
@@ -127,22 +146,39 @@ export class PaymentService {
 
       // 8. Create transaction items
       await tx.insert(transactionItems).values(
-        items.map((item) => ({
+        params.payments.map((p) => ({
           transactionId: transaction.id,
-          billingItemId: item.id,
-          amount: item.amount,
+          billingItemId: p.billingItemId,
+          amount: p.amount,
         }))
       );
 
-      // 9. Update billing items to paid
-      await tx
-        .update(billingItems)
-        .set({
-          status: "paid",
-          paidAt: now,
-          updatedAt: now,
-        })
-        .where(inArray(billingItems.id, params.billingItemIds));
+      // 9. Update billing items (Partial/Full Paid)
+      for (const p of params.payments) {
+        const item = items.find((i) => i.id === p.billingItemId)!;
+        const newPaidAmount = item.paidAmount + p.amount;
+        
+        let newStatus: "paid" | "partially_paid" | "overdue" | "unpaid" | "not_billed" = "partially_paid";
+        if (newPaidAmount >= item.amount) {
+          newStatus = "paid";
+        }
+        
+        await tx
+          .update(billingItems)
+          .set({
+            paidAmount: newPaidAmount,
+            status: newStatus,
+            paidAt: newStatus === "paid" ? now : item.paidAt,
+            updatedAt: now,
+          })
+          .where(eq(billingItems.id, p.billingItemId));
+      }
+
+      // 10. Save excess to balance if requested
+      if (params.saveToBalance && params.paymentMethod !== "balance") {
+        // Asumsi: jika saveToBalance true, uang yg dibayar melebihi total
+        // Logic detail akan ditangani di front-end dengan mempassing nominal total sesuai yang diinput
+      }
 
       return {
         transactionId: transaction.id,

@@ -17,6 +17,7 @@ export default function POSPage() {
   const [cart, setCart] = useState([]);
   const [discountCode, setDiscountCode] = useState('');
   const [discount, setDiscount] = useState(null);
+  const [useBalance, setUseBalance] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [topArrears, setTopArrears] = useState([]);
   const searchRef = useRef(null);
@@ -49,6 +50,7 @@ export default function POSPage() {
         setBillingItems(res.data || []);
         setCart([]);
         setDiscount(null);
+        setUseBalance(false);
       })
       .catch(console.error);
   }, [selectedStudent]);
@@ -63,8 +65,12 @@ export default function POSPage() {
     if (item.status === 'paid') return;
     setCart(prev => {
       const exists = prev.find(c => c.id === item.id);
-      return exists ? prev.filter(c => c.id !== item.id) : [...prev, item];
+      return exists ? prev.filter(c => c.id !== item.id) : [...prev, { ...item, amountToPay: item.amount - (item.paidAmount || 0) }];
     });
+  };
+
+  const updateCartItemAmount = (itemId, amount) => {
+    setCart(prev => prev.map(c => c.id === itemId ? { ...c, amountToPay: amount } : c));
   };
 
   const removeFromCart = (itemId) => {
@@ -82,9 +88,7 @@ export default function POSPage() {
     }
   };
 
-  const subtotal = cart.reduce((sum, item) => sum + Number(item.amount), 0);
-  const overdueCount = cart.filter(i => i.status === 'overdue').length;
-  const lateFees = overdueCount * 25000;
+  const subtotal = cart.reduce((sum, item) => sum + Number(item.amountToPay || 0), 0);
   
   let discountAmount = 0;
   if (discount) {
@@ -92,7 +96,7 @@ export default function POSPage() {
       ? Math.round(subtotal * discount.value / 100)
       : discount.value;
   }
-  const total = subtotal + lateFees - discountAmount;
+  const total = subtotal - discountAmount;
 
   const totalOutstanding = billingItems
     .filter(b => b.status === 'overdue' || b.status === 'unpaid')
@@ -104,8 +108,8 @@ export default function POSPage() {
     try {
       const checkoutRes = await api.checkout({
         studentId: selectedStudent.id,
-        billingItemIds: cart.map(c => c.id),
-        paymentMethod: 'cash',
+        payments: cart.map(c => ({ billingItemId: c.id, amount: Number(c.amountToPay) })),
+        paymentMethod: useBalance ? 'balance' : 'cash',
         discountCode: discount ? discountCode : undefined,
       });
       
@@ -118,6 +122,10 @@ export default function POSPage() {
       setCart([]);
       setDiscount(null);
       setDiscountCode('');
+      setUseBalance(false);
+      
+      // Update student balance info implicitly by re-fetching student (optional, we'll just reload the page or search)
+      api.getStudent(selectedStudent.id).then(res => setSelectedStudent(res.data)).catch(console.error);
     } catch (err) {
       alert('❌ Pembayaran gagal: ' + err.message);
     } finally {
@@ -127,6 +135,7 @@ export default function POSPage() {
 
   const getStatusStyle = (status) => {
     if (status === 'paid') return { border: 'border-outline-variant opacity-70', bg: 'bg-surface-container-lowest', icon: 'check_circle', iconColor: 'text-secondary', label: 'Lunas', labelStyle: 'text-secondary bg-secondary-container' };
+    if (status === 'partially_paid') return { border: 'border-secondary/50', bg: 'bg-surface-container-lowest', icon: 'timelapse', iconColor: 'text-secondary', label: 'Cicilan', labelStyle: 'text-secondary bg-secondary-container' };
     if (status === 'overdue') return { border: 'border-error/20 ring-2 ring-error/30', bg: 'bg-error-container', icon: 'warning', iconColor: 'text-error', label: 'Tunggakan', labelStyle: 'text-on-error bg-error' };
     return { border: 'border-outline-variant hover:border-secondary', bg: 'bg-surface-container-lowest', icon: null, iconColor: '', label: 'Belum Bayar', labelStyle: 'text-on-surface-variant bg-surface-container' };
   };
@@ -183,9 +192,15 @@ export default function POSPage() {
                   </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider m-0 mb-1">Total Tunggakan</p>
-                <p className="font-headline-lg text-headline-lg text-error font-bold font-tabular-nums m-0">{formatRupiah(totalOutstanding)}</p>
+              <div className="text-right flex gap-6">
+                <div>
+                  <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider m-0 mb-1">Saldo Siswa</p>
+                  <p className="font-headline-sm text-headline-sm text-primary font-bold font-tabular-nums m-0">{formatRupiah(selectedStudent.balance || 0)}</p>
+                </div>
+                <div>
+                  <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider m-0 mb-1">Total Tunggakan</p>
+                  <p className="font-headline-sm text-headline-sm text-error font-bold font-tabular-nums m-0">{formatRupiah(totalOutstanding)}</p>
+                </div>
               </div>
             </div>
           ) : (
@@ -259,7 +274,10 @@ export default function POSPage() {
                     </div>
                     <div>
                       <p className={`font-label-md text-label-md ${style.labelStyle} inline-block px-2 py-1 rounded-md mb-1 mt-2`}>{style.label}</p>
-                      <p className="font-tabular-nums text-tabular-nums text-on-surface-variant">{formatRupiah(item.amount)}</p>
+                      <div className="flex justify-between items-center">
+                        <p className="font-tabular-nums text-tabular-nums text-on-surface-variant line-through text-xs mr-2">{item.paidAmount > 0 && formatRupiah(item.amount)}</p>
+                        <p className="font-tabular-nums text-tabular-nums text-on-background font-bold">{formatRupiah(item.amount - (item.paidAmount || 0))}</p>
+                      </div>
                     </div>
                   </div>
                 );
@@ -300,8 +318,16 @@ export default function POSPage() {
                     {item.status === 'overdue' ? 'Terlambat' : 'Lancar'}
                   </span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-tabular-nums text-tabular-nums text-on-background">{formatRupiah(item.amount)}</span>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs">Rp</span>
+                    <input
+                      type="number"
+                      value={item.amountToPay || ''}
+                      onChange={(e) => updateCartItemAmount(item.id, e.target.value)}
+                      className="w-24 pl-6 pr-2 py-1 text-right bg-surface border border-outline-variant rounded-md font-tabular-nums focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary text-sm"
+                    />
+                  </div>
                   <button
                     className="text-on-surface-variant hover:text-error transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center"
                     onClick={() => removeFromCart(item.id)}
@@ -347,14 +373,16 @@ export default function POSPage() {
               <span className="font-body-lg text-body-lg text-on-surface-variant">Subtotal ({cart.length} item)</span>
               <span className="font-tabular-nums text-tabular-nums text-on-background">{formatRupiah(subtotal)}</span>
             </div>
-            {lateFees > 0 && (
-              <div className="flex justify-between mb-6 pb-4 border-b border-surface-variant">
-                <span className="font-body-lg text-body-lg text-on-surface-variant">Denda Keterlambatan ({overdueCount}x)</span>
-                <span className="font-tabular-nums text-tabular-nums text-on-background">{formatRupiah(lateFees)}</span>
-              </div>
-            )}
 
-            <div className="flex justify-between items-end mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <span className="font-body-lg text-body-lg text-on-surface-variant">Gunakan Saldo ({formatRupiah(selectedStudent.balance || 0)})</span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={useBalance} onChange={() => setUseBalance(!useBalance)} />
+                <div className="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:border-surface-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+              </label>
+            </div>
+
+            <div className="flex justify-between items-end mb-6 pt-4 border-t border-surface-variant">
               <span className="font-headline-lg text-headline-lg text-on-background">Total</span>
               <span className="font-headline-lg text-headline-lg text-primary font-bold font-tabular-nums tracking-tight">{formatRupiah(total)}</span>
             </div>
