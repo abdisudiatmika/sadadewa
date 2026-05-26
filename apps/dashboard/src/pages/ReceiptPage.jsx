@@ -66,7 +66,7 @@ export default function ReceiptPage() {
     if (isCicilan) {
       return `${name} (Bayar Rp ${paidAmount.toLocaleString('id-ID')}, Sisa Rp ${sisa.toLocaleString('id-ID')})`;
     } else {
-      return name;
+      return `${name} (Rp ${paidAmount.toLocaleString('id-ID')})`;
     }
   });
 
@@ -75,7 +75,7 @@ export default function ReceiptPage() {
   const finalFeeStrings = [];
   
   feeDetails.forEach(detail => {
-    if (detail.includes('(Bayar Rp')) {
+    if (detail.includes('Bayar Rp')) {
       finalFeeStrings.push(detail); // Don't group installments
     } else {
       feeMap[detail] = (feeMap[detail] || 0) + 1;
