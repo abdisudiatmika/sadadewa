@@ -320,12 +320,12 @@ export default function POSPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-xs">Rp</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-medium text-sm">Rp</span>
                     <input
                       type="number"
                       value={item.amountToPay || ''}
                       onChange={(e) => updateCartItemAmount(item.id, e.target.value)}
-                      className="w-24 pl-6 pr-2 py-1 text-right bg-surface border border-outline-variant rounded-md font-tabular-nums focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary text-sm"
+                      className="w-36 pl-8 pr-2 py-1.5 text-right bg-surface border border-outline-variant rounded-md font-tabular-nums focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary text-base font-semibold"
                     />
                   </div>
                   <button
