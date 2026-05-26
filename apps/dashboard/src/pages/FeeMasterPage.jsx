@@ -452,8 +452,9 @@ export default function FeeMasterPage() {
                     <label className="block font-label-md text-on-surface-variant mb-1">Kode Biaya</label>
                     <input
                       required
+                      disabled
                       type="text"
-                      className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg focus:outline-none focus:border-secondary"
+                      className="w-full px-3 py-2 bg-surface-container border border-outline-variant rounded-lg focus:outline-none focus:border-secondary opacity-70 cursor-not-allowed"
                       value={form.code}
                       onChange={(e) => setForm({ ...form, code: e.target.value })}
                       placeholder="e.g. SPP-10"

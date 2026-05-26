@@ -137,7 +137,7 @@ router.get("/:id/billing", async (req: Request, res: Response) => {
 
 // POST /api/students - Create a new student
 const createStudentSchema = z.object({
-  studentCode: z.string().min(1).max(20),
+  studentCode: z.string().max(20).optional().or(z.literal("")),
   nisn: z.string().min(1).max(20),
   fullName: z.string().min(1).max(150),
   classId: z.string().uuid().optional().or(z.literal("")),
