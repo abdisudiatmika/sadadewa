@@ -53,7 +53,11 @@ export default function FeeMasterPage() {
 
   const openModal = (fee = null) => {
     setEditingFee(fee);
-    setForm(fee ? { ...fee } : { code: '', name: '', amount: '', category: 'recurring', frequency: 'monthly' });
+    
+    // Auto-generate a random code like FEE-XXXX for new fees
+    const autoCode = `FEE-${Math.floor(1000 + Math.random() * 9000)}`;
+    
+    setForm(fee ? { ...fee } : { code: autoCode, name: '', amount: '', category: 'recurring', frequency: 'monthly' });
     setShowModal(true);
   };
 
