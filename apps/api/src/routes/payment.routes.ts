@@ -95,4 +95,14 @@ router.post("/validate-discount", async (req: Request, res: Response) => {
   }
 });
 
+// DELETE /api/payments/:id - Cancel/Reset a transaction
+router.delete("/:id", requireRole("admin", "superadmin"), async (req: Request, res: Response) => {
+  try {
+    const result = await paymentService.cancelTransaction(req.params.id as string);
+    res.json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

@@ -86,6 +86,23 @@ export default function BillingHistoryPage() {
     window.open(`/receipt/${id}`, '_blank');
   };
 
+  const handleCancelTransaction = async (id, code) => {
+    if (!window.confirm(`Yakin ingin MEMBATALKAN transaksi ${code}? \n\nIni akan mengembalikan tagihan menjadi belum lunas (Atau mengurangi cicilan) dan menghapus transaksi ini dari laporan. Tindakan ini tidak bisa dibatalkan.`)) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      await api.cancelTransaction(id);
+      alert('Transaksi berhasil dibatalkan dan dihapus.');
+      fetchTransactions();
+      if (studentId) fetchBilling();
+    } catch (err) {
+      alert(`Gagal membatalkan transaksi: ${err.message}`);
+      setLoading(false);
+    }
+  };
+
   const outstandingItems = billingItems.filter(item => item.status === 'unpaid' || item.status === 'overdue');
   const totalOutstanding = outstandingItems.reduce((sum, item) => sum + Number(item.amount || 0), 0);
 
@@ -368,13 +385,22 @@ export default function BillingHistoryPage() {
                         {formatRupiah(tx.total)}
                       </td>
                       <td className="p-4 border-b border-outline-variant text-center">
-                        <button
-                          onClick={() => viewReceipt(tx.id)}
-                          className="p-2 hover:bg-secondary-container text-secondary rounded-lg transition-all active:scale-95 flex items-center justify-center mx-auto"
-                          title="Cetak Kwitansi"
-                        >
-                          <span className="material-symbols-outlined">print</span>
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => viewReceipt(tx.id)}
+                            className="p-2 hover:bg-secondary-container text-secondary rounded-lg transition-all active:scale-95 flex items-center justify-center"
+                            title="Cetak Kwitansi"
+                          >
+                            <span className="material-symbols-outlined">print</span>
+                          </button>
+                          <button
+                            onClick={() => handleCancelTransaction(tx.id, tx.transactionCode)}
+                            className="p-2 hover:bg-error-container text-error rounded-lg transition-all active:scale-95 flex items-center justify-center"
+                            title="Batalkan (Reset) Transaksi"
+                          >
+                            <span className="material-symbols-outlined">delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

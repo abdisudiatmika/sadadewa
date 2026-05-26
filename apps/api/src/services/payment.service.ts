@@ -295,6 +295,63 @@ export class PaymentService {
       },
     };
   }
+
+  /**
+   * Cancel / Reset a transaction.
+   * This will revert the paidAmount on billing items and refund balance if applicable.
+   */
+  async cancelTransaction(transactionId: string) {
+    return await db.transaction(async (tx) => {
+      // 1. Get transaction with items
+      const trx = await tx.query.transactions.findFirst({
+        where: eq(transactions.id, transactionId),
+        with: { items: true },
+      });
+
+      if (!trx) throw new Error("Transaction not found");
+
+      // 2. Revert billing items
+      for (const item of trx.items) {
+        const billingItem = await tx.query.billingItems.findFirst({
+          where: eq(billingItems.id, item.billingItemId),
+        });
+
+        if (billingItem) {
+          const newPaidAmount = Math.max(0, billingItem.paidAmount - item.amount);
+          let newStatus: "paid" | "partially_paid" | "unpaid" = "unpaid";
+          
+          if (newPaidAmount >= billingItem.amount) {
+            newStatus = "paid";
+          } else if (newPaidAmount > 0) {
+            newStatus = "partially_paid";
+          }
+
+          await tx
+            .update(billingItems)
+            .set({
+              paidAmount: newPaidAmount,
+              status: newStatus,
+              paidAt: newStatus === "paid" ? billingItem.paidAt : null,
+              updatedAt: new Date(),
+            })
+            .where(eq(billingItems.id, billingItem.id));
+        }
+      }
+
+      // 3. Return balance if paymentMethod was balance
+      if (trx.paymentMethod === "balance") {
+        await tx
+          .update(students)
+          .set({ balance: sql`${students.balance} + ${trx.total}` })
+          .where(eq(students.id, trx.studentId));
+      }
+
+      // 4. Delete transaction (transactionItems will cascade)
+      await tx.delete(transactions).where(eq(transactions.id, transactionId));
+
+      return { success: true };
+    });
+  }
 }
 
 export const paymentService = new PaymentService();
