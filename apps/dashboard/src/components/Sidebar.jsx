@@ -9,6 +9,7 @@ const mainNavItems = [
   { icon: 'group', label: 'Data Siswa', path: '/students', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan', 'teacher'] },
   { icon: 'school', label: 'Master Kelas', path: '/master-classes', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
   { icon: 'payments', label: 'Master Biaya', path: '/fees', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
+  { icon: 'fact_check', label: 'Verifikasi Transfer', path: '/payment-proofs', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan'] },
   { icon: 'account_balance_wallet', label: 'Pengeluaran', path: '/expenses', roles: ['admin', 'superadmin', 'staff', 'bendahara_pengeluaran'] },
   { icon: 'analytics', label: 'Laporan Keuangan', path: '/reports', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan', 'bendahara_pengeluaran', 'teacher'] },
 ];

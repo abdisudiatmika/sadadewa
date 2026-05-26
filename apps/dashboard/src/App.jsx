@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import DashboardLayout from './layouts/DashboardLayout';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
+import PublicUploadPage from './pages/PublicUploadPage';
 import POSPage from './pages/POSPage';
 import StudentDashboardPage from './pages/StudentDashboardPage';
 import StudentRecordsPage from './pages/StudentRecordsPage';
@@ -13,6 +14,7 @@ import SettingsPage from './pages/SettingsPage';
 import FeeMasterPage from './pages/FeeMasterPage';
 import MasterClassPage from './pages/MasterClassPage';
 import ReceiptPage from './pages/ReceiptPage';
+import PaymentProofsPage from './pages/PaymentProofsPage';
 import UserManagementPage from './pages/UserManagementPage';
 
 function ProtectedRoute({ children }) {
@@ -40,6 +42,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/upload" element={<PublicUploadPage />} />
       <Route path="/student" element={
         <ProtectedRoute>
           <StudentDashboardPage />
@@ -64,6 +67,7 @@ function AppRoutes() {
         <Route path="settings" element={<SettingsPage />} />
         <Route path="fees" element={<FeeMasterPage />} />
         <Route path="master-classes" element={<MasterClassPage />} />
+        <Route path="payment-proofs" element={<PaymentProofsPage />} />
         <Route path="users" element={<UserManagementPage />} />
         <Route
           path="*"

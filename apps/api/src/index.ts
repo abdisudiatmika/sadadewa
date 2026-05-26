@@ -20,6 +20,13 @@ import settingsRoutes from "./routes/settings.routes.js";
 import masterRoutes from "./routes/master.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import academicYearRoutes from "./routes/academic-year.routes.js";
+import publicRoutes from "./routes/public.routes.js";
+import paymentProofRoutes from "./routes/payment-proof.routes.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -69,6 +76,11 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/master", masterRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/academic-years", academicYearRoutes);
+app.use("/api/public", publicRoutes);
+app.use("/api/payment-proofs", paymentProofRoutes);
+
+// Static file serving for uploads
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Health check
 app.get("/api/health", (_req, res) => {

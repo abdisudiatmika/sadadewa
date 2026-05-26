@@ -362,6 +362,7 @@ export const paymentProofs = pgTable("payment_proofs", {
   className: varchar("class_name", { length: 50 }).notNull(),
   accountOwner: varchar("account_owner", { length: 150 }).notNull(),
   amount: integer("amount").notNull(),
+  notes: text("notes"),
   fileUrl: text("file_url").notNull(),
   status: paymentProofStatusEnum("status").notNull().default("pending"),
   verifiedBy: text("verified_by").references(() => user.id, {

@@ -194,6 +194,13 @@ export const api = {
   cancelTransaction: (id) =>
     request(`/api/payments/${id}`, { method: 'DELETE' }),
 
+  // ---- Payment Proofs (Upload Bukti) ----
+  getPaymentProofs: () =>
+    request('/api/payment-proofs'),
+    
+  updatePaymentProofStatus: (id, status) =>
+    request(`/api/payment-proofs/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+
   // ---- Reports ----
   getReportSummary: (params = {}) => {
     const query = new URLSearchParams();
