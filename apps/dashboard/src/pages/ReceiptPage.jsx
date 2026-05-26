@@ -53,21 +53,12 @@ export default function ReceiptPage() {
 
   const terbilangText = terbilang(transaction.total).trim() + ' Rupiah';
   
-  // Group fees or show detailed cicilan information
+  // Group fees and show paid amounts
   const feeDetails = transaction.items.map(item => {
     const name = item.billingItem?.feeTemplate?.name || 'Tagihan';
-    const billTotal = item.billingItem?.amount || item.amount;
     const paidAmount = item.amount;
     
-    // Check if it's an installment
-    const isCicilan = item.billingItem && (item.billingItem.paidAmount < item.billingItem.amount);
-    const sisa = isCicilan ? (item.billingItem.amount - item.billingItem.paidAmount) : 0;
-    
-    if (isCicilan) {
-      return `${name} (Bayar Rp ${paidAmount.toLocaleString('id-ID')}, Sisa Rp ${sisa.toLocaleString('id-ID')})`;
-    } else {
-      return `${name} (Rp ${paidAmount.toLocaleString('id-ID')})`;
-    }
+    return `${name} (Rp ${paidAmount.toLocaleString('id-ID')})`;
   });
 
   // Count occurrences for fully paid identical items to group them (e.g. SPP (2x))
@@ -75,11 +66,7 @@ export default function ReceiptPage() {
   const finalFeeStrings = [];
   
   feeDetails.forEach(detail => {
-    if (detail.includes('Bayar Rp')) {
-      finalFeeStrings.push(detail); // Don't group installments
-    } else {
-      feeMap[detail] = (feeMap[detail] || 0) + 1;
-    }
+    feeMap[detail] = (feeMap[detail] || 0) + 1;
   });
   
   Object.entries(feeMap).forEach(([name, count]) => {
@@ -161,7 +148,7 @@ export default function ReceiptPage() {
           <div className="flex items-end">
             <div className="w-48 font-semibold">Untuk pembayaran</div>
             <div className="w-4 text-center">:</div>
-            <div className="flex-1 border-b-2 border-gray-800 font-semibold px-2 pb-1 leading-relaxed">
+            <div className="flex-1 border-b-2 border-gray-800 font-semibold px-2 pb-1 leading-snug text-[12px]">
               {feeNames}
             </div>
           </div>
