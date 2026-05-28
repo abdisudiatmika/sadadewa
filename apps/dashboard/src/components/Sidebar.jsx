@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 
 const mainNavItems = [
   { icon: 'dashboard', label: 'Dashboard', path: '/', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan', 'bendahara_pengeluaran', 'teacher'] },
-  { icon: 'manage_accounts', label: 'Manajemen User', path: '/users', roles: ['superadmin'] },
+  { icon: 'manage_accounts', label: 'Manajemen User', path: '/users', roles: ['superadmin', 'admin'] },
   { icon: 'point_of_sale', label: 'Kasir / Pembayaran', path: '/pos', roles: ['superadmin', 'bendahara_pemasukan', 'staff'] },
   { icon: 'receipt_long', label: 'Riwayat Pembayaran', path: '/billing', roles: ['superadmin', 'bendahara_pemasukan', 'staff'] },
   { icon: 'group', label: 'Data Siswa', path: '/students', roles: ['superadmin', 'admin', 'teacher', 'staff'] },

@@ -7,8 +7,8 @@ import { validate } from "../middleware/validate.js";
 
 const router = Router();
 
-// Only superadmin can manage users
-router.use(requireAuth, requireRole("superadmin"));
+// Only superadmin and admin can manage users
+router.use(requireAuth, requireRole("superadmin", "admin"));
 
 router.get("/", async (req: Request, res: Response) => {
   try {
