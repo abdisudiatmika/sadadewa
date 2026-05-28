@@ -55,14 +55,7 @@ export default function TopNav() {
 
         <div className="h-6 w-[1px] bg-outline-variant mx-2" />
 
-        <button
-          id="btn-new-payment"
-          className="bg-[#0D9488] text-white hover:bg-[#0f766e] transition-colors duration-200 font-tabular-nums text-tabular-nums px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm"
-          onClick={() => navigate('/pos')}
-        >
-          <span className="material-symbols-outlined">add</span>
-          Pembayaran Baru
-        </button>
+
 
         {/* User Info & Logout */}
         <div className="flex items-center gap-3 ml-2">
