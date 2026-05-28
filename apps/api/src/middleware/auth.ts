@@ -29,7 +29,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   (async () => {
     try {
       const session = await auth.api.getSession({
-        headers: req.headers,
+        headers: fromNodeHeaders(req.headers),
       });
 
       if (!session) {
@@ -37,7 +37,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
         return;
       }
 
-      req.user = session.user as Request["user"];
+      req.user = session.user as unknown as Request["user"];
       req.session = {
         id: session.session.id,
         userId: session.session.userId,

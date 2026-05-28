@@ -21,7 +21,13 @@ async function request(endpoint, options = {}) {
   }
 
   const res = await fetch(url, config);
-  const data = await res.json();
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    data = { error: text || res.statusText };
+  }
 
   if (!res.ok) {
     throw new Error(data.error || data.message || `Request failed: ${res.status}`);

@@ -34,7 +34,6 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    crossSite: true,
     cookie: {
       namePrefix: "edupay",
       sameSite: "none",
