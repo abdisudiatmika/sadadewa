@@ -159,6 +159,12 @@ export default function ReceiptIncomePage() {
           </div>
         </div>
 
+        {/* Cut line for printing */}
+        <div className="absolute bottom-0 left-0 w-full hidden print:flex items-center opacity-60">
+          <span className="material-symbols-outlined text-[14px] ml-4 -mr-1 text-black bg-white z-10">content_cut</span>
+          <div className="flex-1 border-b border-dashed border-black"></div>
+        </div>
+
       </div>
       
       {/* Global Print Styles */}
