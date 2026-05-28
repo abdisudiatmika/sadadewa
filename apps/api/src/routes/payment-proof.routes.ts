@@ -8,7 +8,7 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 const router = Router();
 
 // Semua rute ini butuh login admin/staff
-router.use(requireAuth, requireRole("admin", "staff", "superadmin"));
+router.use(requireAuth, requireRole("admin", "staff", "superadmin", "bendahara_pemasukan"));
 
 // GET /api/payment-proofs - List semua bukti transfer
 router.get("/", async (req: Request, res: Response) => {

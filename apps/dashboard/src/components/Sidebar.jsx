@@ -4,14 +4,14 @@ import { useAuth } from '../context/AuthContext';
 const mainNavItems = [
   { icon: 'dashboard', label: 'Dashboard', path: '/', roles: ['admin', 'superadmin', 'staff', 'bendahara_pemasukan', 'bendahara_pengeluaran', 'teacher'] },
   { icon: 'manage_accounts', label: 'Manajemen User', path: '/users', roles: ['superadmin'] },
-  { icon: 'point_of_sale', label: 'Kasir / Pembayaran', path: '/pos', roles: ['superadmin', 'bendahara_pemasukan'] },
-  { icon: 'receipt_long', label: 'Riwayat Pembayaran', path: '/billing', roles: ['superadmin', 'bendahara_pemasukan'] },
-  { icon: 'group', label: 'Data Siswa', path: '/students', roles: ['superadmin', 'admin', 'teacher'] },
-  { icon: 'school', label: 'Master Kelas', path: '/master-classes', roles: ['superadmin', 'admin'] },
-  { icon: 'payments', label: 'Master Biaya', path: '/fees', roles: ['superadmin'] },
-  { icon: 'fact_check', label: 'Verifikasi Transfer', path: '/payment-proofs', roles: ['superadmin', 'bendahara_pemasukan'] },
-  { icon: 'account_balance_wallet', label: 'Pengeluaran', path: '/expenses', roles: ['superadmin', 'bendahara_pengeluaran'] },
-  { icon: 'analytics', label: 'Laporan Keuangan', path: '/reports', roles: ['superadmin', 'bendahara_pemasukan', 'bendahara_pengeluaran', 'teacher'] },
+  { icon: 'point_of_sale', label: 'Kasir / Pembayaran', path: '/pos', roles: ['superadmin', 'bendahara_pemasukan', 'staff'] },
+  { icon: 'receipt_long', label: 'Riwayat Pembayaran', path: '/billing', roles: ['superadmin', 'bendahara_pemasukan', 'staff'] },
+  { icon: 'group', label: 'Data Siswa', path: '/students', roles: ['superadmin', 'admin', 'teacher', 'staff'] },
+  { icon: 'school', label: 'Master Kelas', path: '/master-classes', roles: ['superadmin', 'admin', 'staff'] },
+  { icon: 'payments', label: 'Master Biaya', path: '/fees', roles: ['superadmin', 'staff'] },
+  { icon: 'fact_check', label: 'Verifikasi Transfer', path: '/payment-proofs', roles: ['superadmin', 'bendahara_pemasukan', 'staff'] },
+  { icon: 'account_balance_wallet', label: 'Pengeluaran', path: '/expenses', roles: ['superadmin', 'bendahara_pengeluaran', 'staff'] },
+  { icon: 'analytics', label: 'Laporan Keuangan', path: '/reports', roles: ['superadmin', 'bendahara_pemasukan', 'bendahara_pengeluaran', 'teacher', 'staff'] },
 ];
 
 const bottomNavItems = [

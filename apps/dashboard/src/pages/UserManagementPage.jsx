@@ -22,7 +22,7 @@ export default function UserManagementPage() {
     { id: 'bendahara_pemasukan', label: 'Bendahara Pemasukan' },
     { id: 'bendahara_pengeluaran', label: 'Bendahara Pengeluaran' },
     { id: 'teacher', label: 'Wali Kelas' },
-    { id: 'staff', label: 'Staff Umum' },
+    { id: 'staff', label: 'Admin TU' },
   ];
 
   const fetchUsers = async () => {
