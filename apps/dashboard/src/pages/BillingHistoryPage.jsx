@@ -342,7 +342,11 @@ export default function BillingHistoryPage() {
                   </tr>
                 ) : (
                   filteredTransactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-surface-container-low transition-colors group">
+                    <tr 
+                      key={tx.id} 
+                      className="hover:bg-surface-container-low transition-colors group cursor-pointer"
+                      onClick={() => viewReceipt(tx.id)}
+                    >
                       <td className="p-4 border-b border-outline-variant font-tabular-nums text-tabular-nums font-bold text-primary">
                         {tx.transactionCode}
                       </td>
@@ -359,7 +363,7 @@ export default function BillingHistoryPage() {
                         <div className="flex flex-col">
                           <span className="font-body-md text-on-surface font-medium">{tx.student?.fullName}</span>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {tx.items?.map((item, idx) => {
+                            {tx.items?.slice(0, 2).map((item, idx) => {
                               const b = item.billingItem;
                               const label = b?.feeTemplate?.name || 'Item';
                               const period = b?.billingMonth ? `${monthNames[b.billingMonth]} ${b.billingYear}` : b?.billingYear || '';
@@ -369,6 +373,11 @@ export default function BillingHistoryPage() {
                                 </span>
                               );
                             })}
+                            {tx.items?.length > 2 && (
+                               <span className="font-label-sm px-1.5 py-0.5 text-on-surface-variant italic whitespace-nowrap">
+                                 +{tx.items.length - 2} lainnya
+                               </span>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -394,8 +403,8 @@ export default function BillingHistoryPage() {
                             <span className="material-symbols-outlined">print</span>
                           </button>
                           <button
-                            onClick={() => handleCancelTransaction(tx.id, tx.transactionCode)}
-                            className="p-2 hover:bg-error-container text-error rounded-lg transition-all active:scale-95 flex items-center justify-center"
+                            onClick={(e) => { e.stopPropagation(); handleCancelTransaction(tx.id, tx.transactionCode); }}
+                            className="p-2 hover:bg-error-container text-error rounded-lg transition-all active:scale-95 flex items-center justify-center relative z-10"
                             title="Batalkan (Reset) Transaksi"
                           >
                             <span className="material-symbols-outlined">delete</span>

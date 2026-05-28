@@ -33,15 +33,7 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
-  advanced: {
-    cookie: {
-      namePrefix: "edupay",
-      sameSite: "none",
-      secure: true,
-      path: "/",
-      httpOnly: true,
-    },
-  },
+  // advanced cookies config removed
   trustedOrigins: [
     process.env.CORS_ORIGIN || "http://localhost",
     "http://localhost",

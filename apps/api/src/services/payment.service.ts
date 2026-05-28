@@ -17,6 +17,8 @@ export class PaymentService {
     studentId: string;
     payments: { billingItemId: string; amount: number }[];
     discountCode?: string;
+    customDiscountAmount?: number;
+    customDiscountNotes?: string;
     paymentMethod: "cash" | "transfer" | "qris" | "balance";
     cashierId: string;
     notes?: string;
@@ -84,6 +86,19 @@ export class PaymentService {
           .where(eq(discountCodes.id, discount.id));
       }
 
+      // Add custom discount
+      if (params.customDiscountAmount && params.customDiscountAmount > 0) {
+        discountAmount += params.customDiscountAmount;
+      }
+
+      // Combine notes
+      let finalNotes = params.notes || "";
+      if (params.customDiscountNotes) {
+        finalNotes = finalNotes 
+          ? `${finalNotes} | Diskon Manual: ${params.customDiscountNotes}` 
+          : `Diskon Manual: ${params.customDiscountNotes}`;
+      }
+
       // 4. Calculate late fees (HAPUS DENDA SESUAI PERMINTAAN)
       const lateFee = 0;
 
@@ -140,8 +155,8 @@ export class PaymentService {
           discountAmount,
           lateFee,
           total,
-          paymentMethod: params.paymentMethod,
-          notes: params.notes,
+          paymentMethod: params.paymentMethod === "balance" ? "transfer" : params.paymentMethod,
+          notes: finalNotes || null,
         })
         .returning();
 
@@ -339,12 +354,7 @@ export class PaymentService {
       }
 
       // 3. Return balance if paymentMethod was balance
-      if (trx.paymentMethod === "balance") {
-        await tx
-          .update(students)
-          .set({ balance: sql`${students.balance} + ${trx.total}` })
-          .where(eq(students.id, trx.studentId));
-      }
+      // (Currently balance is saved as "transfer", manual refund may be required)
 
       // 4. Delete transaction (transactionItems will cascade)
       await tx.delete(transactions).where(eq(transactions.id, transactionId));

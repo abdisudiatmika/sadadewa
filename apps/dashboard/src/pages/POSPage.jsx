@@ -17,6 +17,8 @@ export default function POSPage() {
   const [cart, setCart] = useState([]);
   const [discountCode, setDiscountCode] = useState('');
   const [discount, setDiscount] = useState(null);
+  const [customDiscountAmount, setCustomDiscountAmount] = useState('');
+  const [customDiscountNotes, setCustomDiscountNotes] = useState('');
   const [useBalance, setUseBalance] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [topArrears, setTopArrears] = useState([]);
@@ -61,6 +63,8 @@ export default function POSPage() {
         setBillingItems(res.data || []);
         setCart([]);
         setDiscount(null);
+        setCustomDiscountAmount('');
+        setCustomDiscountNotes('');
         setUseBalance(false);
       })
       .catch(console.error);
@@ -101,13 +105,13 @@ export default function POSPage() {
 
   const subtotal = cart.reduce((sum, item) => sum + Number(item.amountToPay || 0), 0);
   
-  let discountAmount = 0;
+  let discountAmount = Number(customDiscountAmount) || 0;
   if (discount) {
-    discountAmount = discount.type === 'percentage'
+    discountAmount += discount.type === 'percentage'
       ? Math.round(subtotal * discount.value / 100)
       : discount.value;
   }
-  const total = subtotal - discountAmount;
+  const total = Math.max(0, subtotal - discountAmount);
 
   const totalOutstanding = billingItems
     .filter(b => b.status === 'overdue' || b.status === 'unpaid')
@@ -122,6 +126,8 @@ export default function POSPage() {
         payments: cart.map(c => ({ billingItemId: c.id, amount: Number(c.amountToPay) })),
         paymentMethod: useBalance ? 'balance' : 'cash',
         discountCode: discount ? discountCode : undefined,
+        customDiscountAmount: Number(customDiscountAmount) || undefined,
+        customDiscountNotes: customDiscountNotes || undefined,
       });
       
       // Open receipt in new tab
@@ -133,6 +139,8 @@ export default function POSPage() {
       setCart([]);
       setDiscount(null);
       setDiscountCode('');
+      setCustomDiscountAmount('');
+      setCustomDiscountNotes('');
       setUseBalance(false);
       
       // Update student balance info implicitly by re-fetching student (optional, we'll just reload the page or search)
@@ -406,9 +414,33 @@ export default function POSPage() {
             {discount && (
               <div className="flex justify-between mb-2 text-secondary">
                 <span className="font-body-lg text-body-lg">Diskon ({discount.description})</span>
-                <span className="font-tabular-nums text-tabular-nums">-{formatRupiah(discountAmount)}</span>
+                <span className="font-tabular-nums text-tabular-nums">-{formatRupiah(discount.type === 'percentage' ? Math.round(subtotal * discount.value / 100) : discount.value)}</span>
               </div>
             )}
+
+            <div className="mb-4 pt-2 border-t border-outline-variant/30">
+              <label className="font-label-md text-on-surface-variant block mb-1">Potongan Tambahan / Beasiswa (Opsional)</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">Rp</span>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={customDiscountAmount}
+                    onChange={(e) => setCustomDiscountAmount(e.target.value)}
+                    className="w-full pl-8 pr-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-tabular-nums text-body-md focus:outline-none focus:border-secondary"
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Keterangan (Cth: Beasiswa)"
+                  value={customDiscountNotes}
+                  onChange={(e) => setCustomDiscountNotes(e.target.value)}
+                  className="flex-1 px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md focus:outline-none focus:border-secondary"
+                />
+              </div>
+            </div>
 
             <div className="flex justify-between mb-2">
               <span className="font-body-lg text-body-lg text-on-surface-variant">Subtotal ({cart.length} item)</span>
