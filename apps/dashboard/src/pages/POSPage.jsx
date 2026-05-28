@@ -15,8 +15,6 @@ export default function POSPage() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [billingItems, setBillingItems] = useState([]);
   const [cart, setCart] = useState([]);
-  const [discountCode, setDiscountCode] = useState('');
-  const [discount, setDiscount] = useState(null);
   const [useBalance, setUseBalance] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [topArrears, setTopArrears] = useState([]);
@@ -60,7 +58,6 @@ export default function POSPage() {
       .then(res => {
         setBillingItems(res.data || []);
         setCart([]);
-        setDiscount(null);
         setUseBalance(false);
       })
       .catch(console.error);
@@ -88,26 +85,9 @@ export default function POSPage() {
     setCart(prev => prev.filter(c => c.id !== itemId));
   };
 
-  const applyDiscount = async () => {
-    if (!discountCode) return;
-    try {
-      const res = await api.validateDiscount(discountCode);
-      setDiscount(res.data);
-    } catch (err) {
-      alert('Kode diskon tidak valid: ' + err.message);
-      setDiscount(null);
-    }
-  };
-
   const subtotal = cart.reduce((sum, item) => sum + Number(item.amountToPay || 0), 0);
   
-  let discountAmount = 0;
-  if (discount) {
-    discountAmount = discount.type === 'percentage'
-      ? Math.round(subtotal * discount.value / 100)
-      : discount.value;
-  }
-  const total = subtotal - discountAmount;
+  const total = subtotal;
 
   const totalOutstanding = billingItems
     .filter(b => b.status === 'overdue' || b.status === 'unpaid')
@@ -121,7 +101,6 @@ export default function POSPage() {
         studentId: selectedStudent.id,
         payments: cart.map(c => ({ billingItemId: c.id, amount: Number(c.amountToPay) })),
         paymentMethod: useBalance ? 'balance' : 'cash',
-        discountCode: discount ? discountCode : undefined,
       });
       
       // Open receipt in new tab
@@ -131,8 +110,6 @@ export default function POSPage() {
       const res = await api.getStudentBilling(selectedStudent.id);
       setBillingItems(res.data || []);
       setCart([]);
-      setDiscount(null);
-      setDiscountCode('');
       setUseBalance(false);
       
       // Update student balance info implicitly by re-fetching student (optional, we'll just reload the page or search)
@@ -384,31 +361,6 @@ export default function POSPage() {
         {/* Checkout Footer */}
         {cart.length > 0 && (
           <div className="p-container-padding bg-surface border-t border-surface-variant">
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-body-md text-body-md text-on-surface-variant">Kode diskon</span>
-              <div className="flex w-1/2">
-                <input
-                  className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-l-lg font-body-md text-body-md focus:outline-none focus:border-secondary uppercase"
-                  placeholder="Contoh: BEASISWA"
-                  type="text"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                />
-                <button
-                  className="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-r-lg font-body-md hover:bg-surface-dim transition-colors border border-l-0 border-outline-variant"
-                  onClick={applyDiscount}
-                >
-                  Gunakan
-                </button>
-              </div>
-            </div>
-
-            {discount && (
-              <div className="flex justify-between mb-2 text-secondary">
-                <span className="font-body-lg text-body-lg">Diskon ({discount.description})</span>
-                <span className="font-tabular-nums text-tabular-nums">-{formatRupiah(discountAmount)}</span>
-              </div>
-            )}
 
             <div className="flex justify-between mb-2">
               <span className="font-body-lg text-body-lg text-on-surface-variant">Subtotal ({cart.length} item)</span>

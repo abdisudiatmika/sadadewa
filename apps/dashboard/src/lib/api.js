@@ -196,9 +196,6 @@ export const api = {
     return request(`/api/payments?${query.toString()}`);
   },
 
-  validateDiscount: (code) =>
-    request('/api/payments/validate-discount', { method: 'POST', body: JSON.stringify({ code }) }),
-
   cancelTransaction: (id) =>
     request(`/api/payments/${id}`, { method: 'DELETE' }),
 
