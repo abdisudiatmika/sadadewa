@@ -7,8 +7,8 @@ import { validate } from "../middleware/validate.js";
 
 const router = Router();
 
-// Only admin and staff can manage master data
-router.use(requireAuth, requireRole("admin", "staff"));
+// Global auth, role checks per route
+router.use(requireAuth);
 
 // ==========================================
 // GRADES
@@ -28,7 +28,7 @@ const gradeSchema = z.object({
   level: z.number().int().min(1).max(20),
 });
 
-router.post("/grades", validate({ body: gradeSchema }), async (req: Request, res: Response) => {
+router.post("/grades", requireRole("admin", "superadmin"), validate({ body: gradeSchema }), async (req: Request, res: Response) => {
   try {
     const grade = await masterService.createGrade(req.body);
     res.status(201).json({ success: true, data: grade });
@@ -37,7 +37,7 @@ router.post("/grades", validate({ body: gradeSchema }), async (req: Request, res
   }
 });
 
-router.put("/grades/:id", async (req: Request, res: Response) => {
+router.put("/grades/:id", requireRole("admin", "superadmin"), async (req: Request, res: Response) => {
   try {
     const grade = await masterService.updateGrade(req.params.id, req.body);
     if (!grade) {
@@ -50,7 +50,7 @@ router.put("/grades/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.delete("/grades/:id", async (req: Request, res: Response) => {
+router.delete("/grades/:id", requireRole("admin", "superadmin"), async (req: Request, res: Response) => {
   try {
     const grade = await masterService.deleteGrade(req.params.id);
     if (!grade) {
@@ -92,7 +92,7 @@ const classSchema = z.object({
   homeroomTeacherId: z.string().optional().or(z.literal("")),
 });
 
-router.post("/classes", validate({ body: classSchema }), async (req: Request, res: Response) => {
+router.post("/classes", requireRole("admin", "superadmin"), validate({ body: classSchema }), async (req: Request, res: Response) => {
   try {
     const newClass = await masterService.createClass(req.body);
     res.status(201).json({ success: true, data: newClass });
@@ -101,7 +101,7 @@ router.post("/classes", validate({ body: classSchema }), async (req: Request, re
   }
 });
 
-router.put("/classes/:id", async (req: Request, res: Response) => {
+router.put("/classes/:id", requireRole("admin", "superadmin"), async (req: Request, res: Response) => {
   try {
     const updatedClass = await masterService.updateClass(req.params.id, req.body);
     if (!updatedClass) {
@@ -114,7 +114,7 @@ router.put("/classes/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.delete("/classes/:id", async (req: Request, res: Response) => {
+router.delete("/classes/:id", requireRole("admin", "superadmin"), async (req: Request, res: Response) => {
   try {
     const deletedClass = await masterService.deleteClass(req.params.id);
     if (!deletedClass) {
@@ -127,7 +127,7 @@ router.delete("/classes/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/classes/copy", async (req: Request, res: Response) => {
+router.post("/classes/copy", requireRole("admin", "superadmin"), async (req: Request, res: Response) => {
   try {
     const { sourceAcademicYearId, targetAcademicYearId } = req.body;
     if (!sourceAcademicYearId || !targetAcademicYearId) {

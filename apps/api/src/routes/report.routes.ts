@@ -5,8 +5,8 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = Router();
 
-// All report routes require auth + admin/staff role
-router.use(requireAuth, requireRole("admin", "staff"));
+// All report routes require auth + appropriate roles
+router.use(requireAuth, requireRole("admin", "staff", "superadmin", "bendahara_pemasukan", "bendahara_pengeluaran", "teacher"));
 
 // GET /api/reports/summary - KPI cards (total revenue, collection rate, outstanding)
 router.get("/summary", async (req: Request, res: Response) => {

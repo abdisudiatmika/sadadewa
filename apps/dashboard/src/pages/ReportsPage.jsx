@@ -20,7 +20,7 @@ export default function ReportsPage() {
   };
 
   const getDefaultTab = () => {
-    if (isTeacher) return 'class_summary';
+    if (isTeacher) return 'delinquency';
     if (isPengeluaran) return 'expenses';
     return 'income_daily';
   };
@@ -59,7 +59,7 @@ export default function ReportsPage() {
   if (isSuperadmin || isPemasukan || isPengeluaran) {
     reportCategories.push({ id: 'cashflow', label: 'Pemasukan & Pengeluaran', icon: 'account_balance_wallet' });
   }
-  if (isSuperadmin || isPemasukan || isTeacher) {
+  if (isSuperadmin || isTeacher) {
     reportCategories.push({ id: 'summary', label: 'Tunggakan & Rekapitulasi', icon: 'summarize' });
   }
 
@@ -113,14 +113,22 @@ export default function ReportsPage() {
         setGrades(gRes.data || []);
         setClasses(cRes.data || []);
         setFeeTemplates(fRes.data || []);
-        // Handle both standardized {data: []} and spread {students: []} responses
         setStudents(sRes.students || sRes.data?.students || sRes.data || []);
+        
+        // Lock class filter for teachers
+        if (isTeacher) {
+          const classesData = cRes.data || [];
+          const myClass = classesData.find(c => c.homeroomTeacherId === user.id);
+          if (myClass) {
+            setFilters(prev => ({ ...prev, classId: myClass.id }));
+          }
+        }
       } catch (err) {
         console.error("Error loading filters:", err);
       }
     };
     loadOptions();
-  }, []);
+  }, [isTeacher, user?.id]);
 
   useEffect(() => {
     // Clear search states when tab changes
@@ -437,9 +445,10 @@ export default function ReportsPage() {
             <div className="flex flex-col gap-2">
               <label className="font-label-md text-on-surface-variant">Kelas</label>
               <select 
-                className="bg-surface border border-outline-variant rounded-lg p-2 font-body-md pr-8"
+                className="bg-surface border border-outline-variant rounded-lg p-2 font-body-md pr-8 disabled:opacity-50"
                 value={filters.classId}
                 onChange={e => setFilters({...filters, classId: e.target.value})}
+                disabled={isTeacher}
               >
                 <option value="">Semua Kelas</option>
                 {classes.filter(c => !filters.gradeId || c.gradeId === filters.gradeId).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -492,9 +501,10 @@ export default function ReportsPage() {
           <div className="flex flex-col gap-2">
             <label className="font-label-md text-on-surface-variant">Pilih Kelas</label>
             <select 
-              className="bg-surface border border-outline-variant rounded-lg p-2 font-body-md pr-8"
+              className="bg-surface border border-outline-variant rounded-lg p-2 font-body-md pr-8 disabled:opacity-50"
               value={filters.classId}
               onChange={e => setFilters({...filters, classId: e.target.value})}
+              disabled={isTeacher}
             >
               <option value="">Pilih Kelas...</option>
               {classes.map(c => <option key={c.id} value={c.id}>{c.grade?.name} {c.name}</option>)}

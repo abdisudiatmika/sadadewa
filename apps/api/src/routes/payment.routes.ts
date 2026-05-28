@@ -7,8 +7,8 @@ import { validate } from "../middleware/validate.js";
 
 const router = Router();
 
-// All payment routes require auth + admin/staff role
-router.use(requireAuth, requireRole("admin", "staff"));
+// All payment routes require auth + appropriate roles
+router.use(requireAuth, requireRole("admin", "staff", "superadmin", "bendahara_pemasukan"));
 
 // POST /api/payments/checkout - Process a POS checkout
 const checkoutSchema = z.object({

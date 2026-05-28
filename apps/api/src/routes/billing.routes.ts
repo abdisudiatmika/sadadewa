@@ -5,8 +5,8 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = Router();
 
-// All billing routes require auth + admin/staff role
-router.use(requireAuth, requireRole("admin", "staff"));
+// All billing routes require auth + appropriate roles
+router.use(requireAuth, requireRole("admin", "staff", "superadmin", "bendahara_pemasukan"));
 
 // GET /api/billing - List billing items with filters
 router.get("/", async (req: Request, res: Response) => {

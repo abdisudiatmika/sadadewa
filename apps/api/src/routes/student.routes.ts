@@ -12,8 +12,8 @@ import { validate } from "../middleware/validate.js";
 
 const router = Router();
 
-// All student routes require auth + admin/staff role
-router.use(requireAuth, requireRole("admin", "staff"));
+// All student routes require auth + appropriate roles
+router.use(requireAuth, requireRole("admin", "staff", "superadmin", "bendahara_pemasukan", "teacher"));
 
 // GET /api/students - List with pagination and filters
 router.get("/", async (req: Request, res: Response) => {

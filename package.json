@@ -18,6 +18,7 @@
     "db:studio": "npm run db:studio --workspace=apps/api"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "^0.45.2",
+    "puppeteer": "^25.1.0"
   }
 }

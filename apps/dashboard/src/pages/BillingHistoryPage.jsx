@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 const formatRupiah = (number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -13,6 +14,7 @@ const formatRupiah = (number) => {
 const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function BillingHistoryPage() {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const studentId = searchParams.get('studentId');
@@ -436,13 +438,15 @@ export default function BillingHistoryPage() {
                           >
                             <span className="material-symbols-outlined">print</span>
                           </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleCancelTransaction(tx.id, tx.transactionCode); }}
-                            className="p-2 hover:bg-error-container text-error rounded-lg transition-all active:scale-95 flex items-center justify-center relative z-10"
-                            title="Batalkan (Reset) Transaksi"
-                          >
-                            <span className="material-symbols-outlined">delete</span>
-                          </button>
+                          {user?.role === 'superadmin' && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleCancelTransaction(tx.id, tx.transactionCode); }}
+                              className="p-2 hover:bg-error-container text-error rounded-lg transition-all active:scale-95 flex items-center justify-center relative z-10"
+                              title="Batalkan (Reset) Transaksi"
+                            >
+                              <span className="material-symbols-outlined">delete</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
