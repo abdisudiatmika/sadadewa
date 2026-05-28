@@ -22,6 +22,7 @@ import userRoutes from "./routes/user.routes.js";
 import academicYearRoutes from "./routes/academic-year.routes.js";
 import publicRoutes from "./routes/public.routes.js";
 import paymentProofRoutes from "./routes/payment-proof.routes.js";
+import incomeRoutes from "./routes/income.routes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -78,6 +79,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/academic-years", academicYearRoutes);
 app.use("/api/public", publicRoutes);
 app.use("/api/payment-proofs", paymentProofRoutes);
+app.use("/api/incomes", incomeRoutes);
 
 // Static file serving for uploads
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));

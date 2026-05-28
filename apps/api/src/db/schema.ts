@@ -373,6 +373,24 @@ export const paymentProofs = pgTable("payment_proofs", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// ---- Other Incomes (Pemasukan Lain-lain) ----
+
+export const incomes = pgTable("incomes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  incomeCode: varchar("income_code", { length: 30 }).notNull().unique(),
+  amount: integer("amount").notNull(),
+  category: varchar("category", { length: 50 }).notNull(),
+  source: varchar("source", { length: 150 }).notNull(),
+  description: text("description"),
+  paymentMethod: paymentMethodEnum("payment_method").notNull().default("cash"),
+  date: timestamp("date").notNull().defaultNow(),
+  recordedBy: text("recorded_by")
+    .notNull()
+    .references(() => user.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // ============================================================
 // Relations
 // ============================================================
@@ -385,6 +403,7 @@ export const userRelations = relations(user, ({ many, one }) => ({
   reminders: many(reminders),
   settings: many(systemSettings),
   expenses: many(expenses),
+  incomes: many(incomes),
   managedClass: one(classes, {
     fields: [user.id],
     references: [classes.homeroomTeacherId],
@@ -393,6 +412,10 @@ export const userRelations = relations(user, ({ many, one }) => ({
 
 export const expenseRelations = relations(expenses, ({ one }) => ({
   user: one(user, { fields: [expenses.recordedBy], references: [user.id] }),
+}));
+
+export const incomeRelations = relations(incomes, ({ one }) => ({
+  user: one(user, { fields: [incomes.recordedBy], references: [user.id] }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

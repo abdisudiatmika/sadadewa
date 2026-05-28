@@ -22,6 +22,17 @@ export default function POSPage() {
   const [topArrears, setTopArrears] = useState([]);
   const searchRef = useRef(null);
 
+  // Income Modal States
+  const [showIncomeModal, setShowIncomeModal] = useState(false);
+  const [incomeForm, setIncomeForm] = useState({
+    source: '',
+    category: '',
+    amount: '',
+    paymentMethod: 'cash',
+    description: '',
+  });
+  const [savingIncome, setSavingIncome] = useState(false);
+
   // Load top arrears initially
   useEffect(() => {
     api.getTopArrears(15)
@@ -140,12 +151,42 @@ export default function POSPage() {
     return { border: 'border-outline-variant hover:border-secondary', bg: 'bg-surface-container-lowest', icon: null, iconColor: '', label: 'Belum Bayar', labelStyle: 'text-on-surface-variant bg-surface-container' };
   };
 
+  const handleSaveIncome = async (e) => {
+    e.preventDefault();
+    setSavingIncome(true);
+    try {
+      const res = await api.createIncome({
+        ...incomeForm,
+        amount: Number(incomeForm.amount)
+      });
+      setShowIncomeModal(false);
+      setIncomeForm({ source: '', category: '', amount: '', paymentMethod: 'cash', description: '' });
+      // Open receipt
+      window.open(`/receipt-income/${res.data.id}`, '_blank');
+    } catch (err) {
+      alert('Gagal menyimpan pemasukan: ' + err.message);
+    } finally {
+      setSavingIncome(false);
+    }
+  };
+
   return (
     <div className="flex-1 flex w-full h-full overflow-hidden flex-row">
       {/* Left Side: Selection & Status (60%) */}
       <section className="w-[60%] flex flex-col p-container-padding gap-6 overflow-y-auto">
         {/* Search & Student Context */}
         <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold m-0 text-on-surface">Kasir Pembayaran</h2>
+            <button 
+              className="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-lg flex items-center gap-2 hover:opacity-90 transition-opacity"
+              onClick={() => setShowIncomeModal(true)}
+            >
+              <span className="material-symbols-outlined text-[18px]">add_circle</span>
+              Pemasukan Lain
+            </button>
+          </div>
+
           <div className="relative w-full max-w-md mb-6" ref={searchRef}>
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
             <input
@@ -407,6 +448,106 @@ export default function POSPage() {
           </div>
         )}
       </section>
+
+      {/* MODAL PEMASUKAN LAIN */}
+      {showIncomeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowIncomeModal(false)} />
+          <div className="relative bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-outline-variant animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-outline-variant">
+              <h3 className="font-headline-sm text-on-surface m-0">Tambah Pemasukan Lain</h3>
+              <button onClick={() => setShowIncomeModal(false)} className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full">
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <form onSubmit={handleSaveIncome} className="p-6 space-y-4">
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Dari / Sumber (Sponsor, Donatur)*</label>
+                <input
+                  required
+                  type="text"
+                  className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg font-body-md focus:border-secondary focus:outline-none"
+                  value={incomeForm.source}
+                  onChange={e => setIncomeForm({ ...incomeForm, source: e.target.value })}
+                  placeholder="Contoh: PT. ABC atau Bapak Budi"
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Kategori*</label>
+                <input
+                  required
+                  type="text"
+                  className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg font-body-md focus:border-secondary focus:outline-none"
+                  value={incomeForm.category}
+                  onChange={e => setIncomeForm({ ...incomeForm, category: e.target.value })}
+                  placeholder="Contoh: Sponsorship Lomba"
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Nominal (Rp)*</label>
+                <input
+                  required
+                  type="number"
+                  min="1"
+                  className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg font-body-md focus:border-secondary focus:outline-none font-tabular-nums"
+                  value={incomeForm.amount}
+                  onChange={e => setIncomeForm({ ...incomeForm, amount: e.target.value })}
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Metode Pembayaran</label>
+                <select
+                  required
+                  className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg font-body-md focus:border-secondary focus:outline-none"
+                  value={incomeForm.paymentMethod}
+                  onChange={e => setIncomeForm({ ...incomeForm, paymentMethod: e.target.value })}
+                >
+                  <option value="cash">Tunai (Cash)</option>
+                  <option value="transfer">Transfer Bank</option>
+                  <option value="qris">QRIS</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Keterangan / Catatan</label>
+                <textarea
+                  className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg font-body-md focus:border-secondary focus:outline-none min-h-[80px]"
+                  value={incomeForm.description}
+                  onChange={e => setIncomeForm({ ...incomeForm, description: e.target.value })}
+                  placeholder="Keterangan tambahan..."
+                />
+              </div>
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-outline-variant">
+                <button
+                  type="button"
+                  onClick={() => setShowIncomeModal(false)}
+                  className="px-5 py-2.5 font-label-md text-on-surface-variant hover:bg-surface-container rounded-lg"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingIncome}
+                  className="px-5 py-2.5 font-label-md bg-primary text-on-primary rounded-lg flex items-center gap-2 hover:opacity-90 disabled:opacity-50"
+                >
+                  {savingIncome ? (
+                    <>
+                      <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-[18px]">save</span>
+                      Simpan & Cetak
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

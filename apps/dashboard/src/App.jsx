@@ -14,6 +14,7 @@ import SettingsPage from './pages/SettingsPage';
 import FeeMasterPage from './pages/FeeMasterPage';
 import MasterClassPage from './pages/MasterClassPage';
 import ReceiptPage from './pages/ReceiptPage';
+import ReceiptIncomePage from './pages/ReceiptIncomePage';
 import PaymentProofsPage from './pages/PaymentProofsPage';
 import UserManagementPage from './pages/UserManagementPage';
 
@@ -51,6 +52,11 @@ function AppRoutes() {
       <Route path="/receipt/:id" element={
         <ProtectedRoute>
           <ReceiptPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/receipt-income/:id" element={
+        <ProtectedRoute>
+          <ReceiptIncomePage />
         </ProtectedRoute>
       } />
       <Route path="/" element={

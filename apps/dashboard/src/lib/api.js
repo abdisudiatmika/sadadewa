@@ -201,6 +201,20 @@ export const api = {
   updatePaymentProofStatus: (id, status) =>
     request(`/api/payment-proofs/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
 
+  // ---- Incomes (Pemasukan Lain) ----
+  getIncomes: (params) => {
+    const qs = new URLSearchParams();
+    if (params?.page) qs.append('page', params.page);
+    if (params?.perPage) qs.append('perPage', params.perPage);
+    if (params?.search) qs.append('search', params.search);
+    if (params?.category) qs.append('category', params.category);
+    return request(`/api/incomes?${qs.toString()}`);
+  },
+  getIncome: (id) =>
+    request(`/api/incomes/${id}`),
+  createIncome: (data) =>
+    request('/api/incomes', { method: 'POST', body: JSON.stringify(data) }),
+
   // ---- Reports ----
   getReportSummary: (params = {}) => {
     const query = new URLSearchParams();

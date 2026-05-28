@@ -9,6 +9,7 @@ import {
   grades,
   reminders,
   studentClasses,
+  incomes,
 } from "../db/schema.js";
 import { eq, and, or, sql, count, sum, ne, gte, lte, inArray, desc } from "drizzle-orm";
 
@@ -282,12 +283,26 @@ export class ReportService {
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
 
-    return await db.query.transactions.findMany({
+    const txs = await db.query.transactions.findMany({
       where: and(gte(transactions.createdAt, start), lte(transactions.createdAt, end)),
       with: {
         student: true,
         items: { with: { billingItem: { with: { feeTemplate: true } } } },
       },
+    });
+
+    // Import incomes table at the top if needed or just use db.query.incomes if available
+    // Actually, we must add incomes to db/schema.ts exports and then here. 
+    // Wait, Drizzle's db.query needs the table exported from schema.ts.
+    // Let's assume incomes is exported.
+    const incs = await db.query.incomes.findMany({
+      where: and(gte(incomes.date, start), lte(incomes.date, end)),
+    });
+
+    return [...txs, ...incs].sort((a, b) => {
+      const dateA = (a as any).createdAt || (a as any).date;
+      const dateB = (b as any).createdAt || (b as any).date;
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
   }
 
@@ -295,20 +310,38 @@ export class ReportService {
    * Laporan Pemasukan Bulanan
    */
   async getMonthlyIncome(params: { month: number; year: number; paymentMethod?: string }) {
-    const conditions = [
+    const conditionsTx = [
       sql`EXTRACT(MONTH FROM ${transactions.createdAt}) = ${params.month}`,
       sql`EXTRACT(YEAR FROM ${transactions.createdAt}) = ${params.year}`,
     ];
     if (params.paymentMethod) {
-      conditions.push(eq(transactions.paymentMethod, params.paymentMethod as any));
+      conditionsTx.push(eq(transactions.paymentMethod, params.paymentMethod as any));
     }
 
-    return await db.query.transactions.findMany({
-      where: and(...conditions),
+    const txs = await db.query.transactions.findMany({
+      where: and(...conditionsTx),
       with: {
         student: true,
         items: { with: { billingItem: { with: { feeTemplate: true } } } },
       },
+    });
+
+    const conditionsInc = [
+      sql`EXTRACT(MONTH FROM ${incomes.date}) = ${params.month}`,
+      sql`EXTRACT(YEAR FROM ${incomes.date}) = ${params.year}`,
+    ];
+    if (params.paymentMethod) {
+      conditionsInc.push(eq(incomes.paymentMethod, params.paymentMethod as any));
+    }
+
+    const incs = await db.query.incomes.findMany({
+      where: and(...conditionsInc),
+    });
+
+    return [...txs, ...incs].sort((a, b) => {
+      const dateA = (a as any).createdAt || (a as any).date;
+      const dateB = (b as any).createdAt || (b as any).date;
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
   }
 
