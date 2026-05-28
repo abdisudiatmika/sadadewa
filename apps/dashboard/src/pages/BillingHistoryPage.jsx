@@ -30,6 +30,11 @@ export default function BillingHistoryPage() {
   const [billingItems, setBillingItems] = useState([]);
   const [billingLoading, setBillingLoading] = useState(false);
 
+  // Edit Bill State
+  const [editingBill, setEditingBill] = useState(null);
+  const [newAmount, setNewAmount] = useState('');
+  const [savingBill, setSavingBill] = useState(false);
+
   useEffect(() => {
     fetchTransactions();
   }, [page, perPage, studentId, startDate, endDate]);
@@ -100,6 +105,20 @@ export default function BillingHistoryPage() {
     } catch (err) {
       alert(`Gagal membatalkan transaksi: ${err.message}`);
       setLoading(false);
+    }
+  };
+
+  const handleAdjustBill = async (e) => {
+    e.preventDefault();
+    setSavingBill(true);
+    try {
+      await api.adjustBillingItem(editingBill.id, Number(newAmount));
+      setEditingBill(null);
+      fetchBilling();
+    } catch (err) {
+      alert('Gagal mengubah tagihan: ' + err.message);
+    } finally {
+      setSavingBill(false);
     }
   };
 
@@ -179,12 +198,13 @@ export default function BillingHistoryPage() {
                   <th className="text-left p-4 font-label-lg text-on-surface-variant border-b border-outline-variant">Periode</th>
                   <th className="text-right p-4 font-label-lg text-on-surface-variant border-b border-outline-variant">Nominal</th>
                   <th className="text-center p-4 font-label-lg text-on-surface-variant border-b border-outline-variant">Status</th>
+                  <th className="text-center p-4 font-label-lg text-on-surface-variant border-b border-outline-variant w-24">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {billingLoading ? (
                   <tr>
-                    <td colSpan="4" className="p-8 text-center">
+                    <td colSpan="5" className="p-8 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <span className="material-symbols-outlined animate-spin text-secondary text-4xl">progress_activity</span>
                         <p className="font-body-md text-on-surface-variant">Memuat data...</p>
@@ -193,7 +213,7 @@ export default function BillingHistoryPage() {
                   </tr>
                 ) : outstandingItems.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="p-12 text-center">
+                    <td colSpan="5" className="p-12 text-center">
                       <span className="material-symbols-outlined text-outline text-5xl mb-2 block">check_circle</span>
                       <p className="font-body-lg text-on-surface-variant">Tidak ada tunggakan.</p>
                     </td>
@@ -216,6 +236,20 @@ export default function BillingHistoryPage() {
                             {item.status}
                           </span>
                         </td>
+                        <td className="p-4 border-b border-outline-variant text-center">
+                          {item.paidAmount === 0 && (
+                            <button
+                              onClick={() => {
+                                setEditingBill(item);
+                                setNewAmount(item.amount);
+                              }}
+                              className="p-2 hover:bg-secondary-container text-secondary rounded-lg transition-all active:scale-95 flex items-center justify-center mx-auto"
+                              title="Edit Nominal (Diskon/Beasiswa)"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">edit</span>
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                     <tr className="bg-surface-container font-bold">
@@ -225,7 +259,7 @@ export default function BillingHistoryPage() {
                       <td className="p-4 text-right font-tabular-nums text-tabular-nums text-error font-bold">
                         {formatRupiah(totalOutstanding)}
                       </td>
-                      <td></td>
+                      <td colSpan="2"></td>
                     </tr>
                   </>
                 )}
@@ -445,6 +479,67 @@ export default function BillingHistoryPage() {
           </div>
         </div>
       )}
+
+      {/* MODAL EDIT TAGIHAN */}
+      {editingBill && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setEditingBill(null)} />
+          <div className="relative bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-sm mx-4 border border-outline-variant animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-outline-variant">
+              <h3 className="font-headline-sm text-on-surface m-0">Edit Tagihan</h3>
+              <button onClick={() => setEditingBill(null)} className="p-2 text-on-surface-variant hover:bg-surface-container rounded-full">
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <form onSubmit={handleAdjustBill} className="p-6 space-y-4">
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Tagihan</label>
+                <div className="font-body-md text-on-surface font-medium bg-surface p-3 rounded-lg border border-outline-variant">
+                  {editingBill.feeTemplate?.name || 'Item'}
+                  {editingBill.billingMonth ? ` - ${monthNames[editingBill.billingMonth]} ${editingBill.billingYear}` : ''}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block font-label-md text-on-surface-variant mb-1">Nominal (Rp)*</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">Rp</span>
+                  <input
+                    required
+                    type="number"
+                    min="0"
+                    className="w-full pl-8 pr-3 py-2 bg-surface border border-outline-variant rounded-lg font-body-md focus:border-secondary focus:outline-none font-tabular-nums"
+                    value={newAmount}
+                    onChange={e => setNewAmount(e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+                <p className="font-body-sm text-on-surface-variant mt-2 text-xs">
+                  Gunakan fitur ini untuk memberikan potongan (seperti beasiswa) dengan menurunkan nominal tagihan.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-outline-variant">
+                <button
+                  type="button"
+                  onClick={() => setEditingBill(null)}
+                  className="px-5 py-2.5 font-label-md text-on-surface-variant hover:bg-surface-container rounded-lg"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingBill || newAmount === '' || Number(newAmount) < 0}
+                  className="px-5 py-2.5 font-label-md bg-primary text-on-primary rounded-lg flex items-center gap-2 hover:opacity-90 disabled:opacity-50"
+                >
+                  {savingBill ? 'Menyimpan...' : 'Simpan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

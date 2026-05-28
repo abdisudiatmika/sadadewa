@@ -64,6 +64,27 @@ router.patch("/:id/status", async (req: Request, res: Response) => {
   }
 });
 
+// PUT /api/billing/:id/adjust - Adjust the nominal amount of an unpaid billing item
+router.put("/:id/adjust", async (req: Request, res: Response) => {
+  try {
+    const { amount } = req.body;
+    if (typeof amount !== "number" || amount < 0) {
+      res.status(400).json({ success: false, error: "Valid amount is required" });
+      return;
+    }
+
+    const updated = await billingService.adjustBillingItem(req.params.id as string, amount);
+    if (!updated) {
+      res.status(404).json({ success: false, error: "Billing item not found" });
+      return;
+    }
+
+    res.json({ success: true, data: updated });
+  } catch (error: any) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
 import * as xlsx from "xlsx";
 
 // GET /api/billing/template-arrears - Download Arrears Template

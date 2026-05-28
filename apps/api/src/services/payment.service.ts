@@ -17,8 +17,6 @@ export class PaymentService {
     studentId: string;
     payments: { billingItemId: string; amount: number }[];
     discountCode?: string;
-    customDiscountAmount?: number;
-    customDiscountNotes?: string;
     paymentMethod: "cash" | "transfer" | "qris" | "balance";
     cashierId: string;
     notes?: string;
@@ -86,19 +84,6 @@ export class PaymentService {
           .where(eq(discountCodes.id, discount.id));
       }
 
-      // Add custom discount
-      if (params.customDiscountAmount && params.customDiscountAmount > 0) {
-        discountAmount += params.customDiscountAmount;
-      }
-
-      // Combine notes
-      let finalNotes = params.notes || "";
-      if (params.customDiscountNotes) {
-        finalNotes = finalNotes 
-          ? `${finalNotes} | Diskon Manual: ${params.customDiscountNotes}` 
-          : `Diskon Manual: ${params.customDiscountNotes}`;
-      }
-
       // 4. Calculate late fees (HAPUS DENDA SESUAI PERMINTAAN)
       const lateFee = 0;
 
@@ -156,7 +141,7 @@ export class PaymentService {
           lateFee,
           total,
           paymentMethod: params.paymentMethod === "balance" ? "transfer" : params.paymentMethod,
-          notes: finalNotes || null,
+          notes: params.notes,
         })
         .returning();
 

@@ -108,6 +108,26 @@ export class BillingService {
   }
 
   /**
+   * Adjust the amount of an unpaid billing item (for discounts/scholarships)
+   */
+  async adjustBillingItem(id: string, newAmount: number) {
+    // Pastikan tagihan belum lunas
+    const [item] = await db.select().from(billingItems).where(eq(billingItems.id, id));
+    if (!item) throw new Error("Billing item not found");
+    if (item.paidAmount > 0) {
+      throw new Error("Cannot adjust billing item that has already been partially or fully paid");
+    }
+
+    const [updated] = await db
+      .update(billingItems)
+      .set({ amount: newAmount, updatedAt: new Date() })
+      .where(eq(billingItems.id, id))
+      .returning();
+
+    return updated || null;
+  }
+
+  /**
    * Bulk upload arrears from Excel.
    */
   async bulkUploadArrears(records: { nisn: string; amount: number; billName: string }[]) {

@@ -142,6 +142,8 @@ export const api = {
 
   resetArrears: () => request('/api/billing/reset-arrears', { method: 'DELETE' }),
 
+  adjustBillingItem: (id, amount) => request(`/api/billing/${id}/adjust`, { method: 'PUT', body: JSON.stringify({ amount }) }),
+
   getStudentBilling: (id, academicYearId) => {
     const query = academicYearId ? `?academicYearId=${academicYearId}` : '';
     return request(`/api/students/${id}/billing${query}`);
