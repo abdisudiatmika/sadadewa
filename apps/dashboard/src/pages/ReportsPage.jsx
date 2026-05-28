@@ -189,12 +189,12 @@ export default function ReportsPage() {
 
     if (activeTab === 'income_daily' || activeTab === 'income_monthly') {
       exportData = data.map(tx => ({
-        'Kode TRX': tx.transactionCode,
-        'Tanggal': new Date(tx.createdAt).toLocaleString(),
-        'Siswa': tx.student?.fullName,
-        'Item': tx.items?.map(i => i.billingItem?.feeTemplate?.name).join(', '),
+        'Kode TRX': tx.transactionCode || tx.incomeCode,
+        'Tanggal': new Date(tx.createdAt || tx.date).toLocaleString(),
+        'Sumber/Siswa': tx.student?.fullName || tx.source,
+        'Item/Kategori': (!tx.transactionCode) ? `${tx.category} ${tx.description ? `(${tx.description})` : ''}` : tx.items?.map(i => i.billingItem?.feeTemplate?.name).join(', '),
         'Metode': tx.paymentMethod,
-        'Total': tx.total
+        'Total': tx.total || tx.amount
       }));
     } else if (activeTab === 'delinquency') {
       const feeTypes = [...new Set(data.map(it => it.feeTemplate?.name).filter(Boolean))];
@@ -523,28 +523,36 @@ export default function ReportsPage() {
                 <thead className="bg-surface-container sticky top-0 z-20">
                   <tr>
                     <th className="p-4 font-label-lg border-b border-outline-variant">Kode TRX</th>
-                    <th className="p-4 font-label-lg border-b border-outline-variant">Siswa</th>
+                    <th className="p-4 font-label-lg border-b border-outline-variant">Siswa / Sumber</th>
                     <th className="p-4 font-label-lg border-b border-outline-variant">Metode</th>
                     <th className="p-4 font-label-lg border-b border-outline-variant text-right">Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map(tx => (
-                    <tr key={tx.id} className="hover:bg-surface-container-low transition-colors">
-                      <td className="p-4 border-b border-outline-variant font-tabular-nums">{tx.transactionCode}</td>
-                      <td className="p-4 border-b border-outline-variant">
-                        <div className="flex flex-col">
-                          <span className="font-medium">{tx.student?.fullName}</span>
-                          <span className="text-[12px] text-on-surface-variant">{tx.items?.map(i => i.billingItem?.feeTemplate?.name).join(', ')}</span>
-                        </div>
-                      </td>
-                      <td className="p-4 border-b border-outline-variant capitalize">{tx.paymentMethod}</td>
-                      <td className="p-4 border-b border-outline-variant text-right font-bold">{formatRupiah(tx.total)}</td>
-                    </tr>
-                  ))}
+                  {data.map(tx => {
+                    const isIncome = !tx.transactionCode;
+                    return (
+                      <tr key={tx.id} className="hover:bg-surface-container-low transition-colors">
+                        <td className="p-4 border-b border-outline-variant font-tabular-nums">{tx.transactionCode || tx.incomeCode}</td>
+                        <td className="p-4 border-b border-outline-variant">
+                          <div className="flex flex-col">
+                            <span className="font-medium">{tx.student?.fullName || tx.source}</span>
+                            <span className="text-[12px] text-on-surface-variant">
+                              {isIncome 
+                                ? `${tx.category} ${tx.description ? `(${tx.description})` : ''}`
+                                : tx.items?.map(i => i.billingItem?.feeTemplate?.name).join(', ')
+                              }
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 border-b border-outline-variant capitalize">{tx.paymentMethod}</td>
+                        <td className="p-4 border-b border-outline-variant text-right font-bold">{formatRupiah(tx.total || tx.amount)}</td>
+                      </tr>
+                    );
+                  })}
                   <tr className="bg-surface-container-low font-bold">
                     <td colSpan="3" className="p-4 text-right">TOTAL PEMASUKAN</td>
-                    <td className="p-4 text-right text-primary">{formatRupiah(data.reduce((sum, tx) => sum + Number(tx.total || 0), 0))}</td>
+                    <td className="p-4 text-right text-primary">{formatRupiah(data.reduce((sum, tx) => sum + Number(tx.total || tx.amount || 0), 0))}</td>
                   </tr>
                 </tbody>
               </table>
