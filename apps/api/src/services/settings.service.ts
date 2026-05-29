@@ -83,13 +83,37 @@ export class SettingsService {
    */
   async updateProfile(
     userId: string,
-    data: { name?: string; image?: string }
+    data: { name?: string; image?: string; password?: string }
   ) {
-    const [updated] = await db
-      .update(user)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(user.id, userId))
-      .returning();
+    const { password, ...rest } = data;
+
+    let updated = null;
+    if (Object.keys(rest).length > 0) {
+      const [res] = await db
+        .update(user)
+        .set({ ...rest, updatedAt: new Date() })
+        .where(eq(user.id, userId))
+        .returning();
+      updated = res;
+    }
+
+    if (password && password.trim() !== "") {
+      const { hashPassword } = await import("better-auth/crypto");
+      const hashedPassword = await hashPassword(password);
+      
+      // Need to import account schema dynamically or add it at the top
+      const { account } = await import("../db/schema.js");
+      await db
+        .update(account)
+        .set({ password: hashedPassword })
+        .where(eq(account.userId, userId));
+    }
+
+    // if only password was updated, we still return the user
+    if (!updated) {
+      const [res] = await db.select().from(user).where(eq(user.id, userId));
+      updated = res;
+    }
 
     return updated || null;
   }

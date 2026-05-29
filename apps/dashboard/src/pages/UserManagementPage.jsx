@@ -213,18 +213,19 @@ export default function UserManagementPage() {
                 />
               </div>
 
-              {!editingUser && (
-                <div className="space-y-1.5">
-                  <label className="font-label-md text-on-surface-variant">Password</label>
-                  <input 
-                    type="password" 
-                    className="w-full px-4 py-2.5 rounded-lg bg-surface-container border border-outline-variant focus:border-primary focus:outline-none transition-all"
-                    value={form.password}
-                    onChange={e => setForm({...form, password: e.target.value})}
-                    required
-                  />
-                </div>
-              )}
+              <div className="space-y-1.5">
+                <label className="font-label-md text-on-surface-variant">
+                  {editingUser ? 'Password Baru (Kosongkan jika tidak diubah)' : 'Password'}
+                </label>
+                <input 
+                  type="password" 
+                  className="w-full px-4 py-2.5 rounded-lg bg-surface-container border border-outline-variant focus:border-primary focus:outline-none transition-all"
+                  value={form.password}
+                  onChange={e => setForm({...form, password: e.target.value})}
+                  required={!editingUser}
+                  placeholder={editingUser ? 'Biarkan kosong jika tidak diubah' : ''}
+                />
+              </div>
 
               <div className="space-y-1.5">
                 <label className="font-label-md text-on-surface-variant">Role Akses</label>

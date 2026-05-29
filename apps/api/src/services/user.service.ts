@@ -1,5 +1,5 @@
 import { db } from "../db/index.js";
-import { user } from "../db/schema.js";
+import { user, account } from "../db/schema.js";
 import { eq, desc, ne, and, or } from "drizzle-orm";
 import { auth } from "../auth/index.js";
 
@@ -33,12 +33,27 @@ export class UserService {
     return result.user;
   }
 
-  async updateUser(id: string, data: { name?: string; role?: string; email?: string }) {
-    const [updated] = await db
-      .update(user)
-      .set(data as any)
-      .where(eq(user.id, id))
-      .returning();
+  async updateUser(id: string, data: { name?: string; role?: string; email?: string; password?: string }) {
+    const { password, ...rest } = data;
+    
+    if (Object.keys(rest).length > 0) {
+      await db
+        .update(user)
+        .set(rest as any)
+        .where(eq(user.id, id));
+    }
+
+    if (password && password.trim() !== "") {
+      const { hashPassword } = await import("better-auth/crypto");
+      const hashedPassword = await hashPassword(password);
+      
+      await db
+        .update(account)
+        .set({ password: hashedPassword })
+        .where(eq(account.userId, id));
+    }
+
+    const [updated] = await db.select().from(user).where(eq(user.id, id));
     return updated;
   }
 

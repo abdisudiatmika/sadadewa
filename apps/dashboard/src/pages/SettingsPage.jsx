@@ -7,6 +7,7 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const [settings, setSettings] = useState({ theme: 'light', font_size: 'default', brand_color: '#006a61' });
   const [profileName, setProfileName] = useState('');
+  const [profilePassword, setProfilePassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   
@@ -35,8 +36,11 @@ export default function SettingsPage() {
     setMessage('');
     try {
       await api.updateSettings(settings);
-      if (profileName !== user?.name) {
-        await api.updateProfile({ name: profileName });
+      if (profileName !== user?.name || profilePassword !== '') {
+        const updatePayload = { name: profileName };
+        if (profilePassword) updatePayload.password = profilePassword;
+        await api.updateProfile(updatePayload);
+        setProfilePassword('');
       }
       setMessage('✅ Settings saved successfully!');
     } catch (err) {
@@ -274,6 +278,16 @@ export default function SettingsPage() {
                   className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface-variant cursor-not-allowed"
                   value={user?.email || ''}
                   disabled
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-label-md text-on-surface-variant mb-1">Ganti Password</label>
+                <input
+                  type="password"
+                  className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                  value={profilePassword}
+                  onChange={(e) => setProfilePassword(e.target.value)}
+                  placeholder="Kosongkan jika tidak ingin diubah"
                 />
               </div>
             </div>

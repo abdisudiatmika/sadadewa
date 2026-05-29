@@ -44,10 +44,11 @@ router.post("/reset", async (req: Request, res: Response) => {
 // PUT /api/settings/profile - Update user profile
 router.put("/profile", async (req: Request, res: Response) => {
   try {
-    const { name, image } = req.body;
+    const { name, image, password } = req.body;
     const updated = await settingsService.updateProfile(req.user!.id, {
       name,
       image,
+      password,
     });
 
     if (!updated) {
