@@ -49,9 +49,9 @@ router.post(
         return;
       }
 
-      const { studentName, className, accountOwner, amount, notes } = req.body;
+      const { studentName, className, accountOwner, amount, notes, destinationBank } = req.body;
 
-      if (!studentName || !className || !accountOwner || !amount) {
+      if (!studentName || !className || !accountOwner || !amount || !destinationBank) {
         res.status(400).json({ success: false, error: "Semua kolom (kecuali keterangan) wajib diisi" });
         return;
       }
@@ -65,6 +65,7 @@ router.post(
           className,
           accountOwner,
           amount: parseInt(amount, 10),
+          destinationBank,
           notes: notes || null,
           fileUrl,
         })

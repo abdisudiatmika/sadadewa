@@ -8,7 +8,7 @@ const mainNavItems = [
   { icon: 'receipt_long', label: 'Riwayat Pembayaran', path: '/billing', roles: ['superadmin', 'bendahara_pemasukan', 'staff'] },
   { icon: 'group', label: 'Data Siswa', path: '/students', roles: ['superadmin', 'admin', 'teacher', 'staff'] },
   { icon: 'school', label: 'Master Kelas', path: '/master-classes', roles: ['superadmin', 'admin', 'staff'] },
-  { icon: 'payments', label: 'Master Biaya', path: '/fees', roles: ['superadmin', 'staff'] },
+  { icon: 'payments', label: 'Master Biaya', path: '/fees', roles: ['superadmin', 'staff', 'bendahara_pemasukan'] },
   { icon: 'fact_check', label: 'Verifikasi Transfer', path: '/payment-proofs', roles: ['superadmin', 'bendahara_pemasukan', 'staff'] },
   { icon: 'account_balance_wallet', label: 'Pengeluaran', path: '/expenses', roles: ['superadmin', 'bendahara_pengeluaran', 'staff'] },
   { icon: 'analytics', label: 'Laporan Keuangan', path: '/reports', roles: ['superadmin', 'bendahara_pemasukan', 'bendahara_pengeluaran', 'teacher', 'staff'] },

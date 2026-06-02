@@ -53,6 +53,7 @@ export default function ReportsPage() {
     studentId: '',
     startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
+    source: ''
   });
 
   const reportCategories = [];
@@ -411,8 +412,58 @@ export default function ReportsPage() {
               >
                 <option value="">Semua Metode</option>
                 <option value="cash">Tunai (Cash)</option>
-                <option value="transfer">Transfer</option>
+                <option value="transfer_bri">Transfer BRI</option>
+                <option value="transfer_bukopin">Transfer Bukopin</option>
+                <option value="transfer_other">Transfer Lainnya</option>
+                <option value="transfer">Transfer (Lama)</option>
                 <option value="qris">QRIS</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-label-md text-on-surface-variant">Sumber (Kategori)</label>
+              <select 
+                className="bg-surface border border-outline-variant rounded-lg p-2 font-body-md pr-8"
+                value={filters.source}
+                onChange={e => setFilters({...filters, source: e.target.value})}
+              >
+                <option value="">Semua Sumber</option>
+                <option value="spp">SPP</option>
+                <option value="extra">Ekstrakurikuler / Kegiatan</option>
+                <option value="other">Pemasukan Lain</option>
+              </select>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'income_daily' && (
+          <>
+            <div className="flex flex-col gap-2">
+              <label className="font-label-md text-on-surface-variant">Metode</label>
+              <select 
+                className="bg-surface border border-outline-variant rounded-lg p-2 font-body-md pr-8"
+                value={filters.paymentMethod}
+                onChange={e => setFilters({...filters, paymentMethod: e.target.value})}
+              >
+                <option value="">Semua Metode</option>
+                <option value="cash">Tunai (Cash)</option>
+                <option value="transfer_bri">Transfer BRI</option>
+                <option value="transfer_bukopin">Transfer Bukopin</option>
+                <option value="transfer_other">Transfer Lainnya</option>
+                <option value="transfer">Transfer (Lama)</option>
+                <option value="qris">QRIS</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="font-label-md text-on-surface-variant">Sumber (Kategori)</label>
+              <select 
+                className="bg-surface border border-outline-variant rounded-lg p-2 font-body-md pr-8"
+                value={filters.source}
+                onChange={e => setFilters({...filters, source: e.target.value})}
+              >
+                <option value="">Semua Sumber</option>
+                <option value="spp">SPP</option>
+                <option value="extra">Ekstrakurikuler / Kegiatan</option>
+                <option value="other">Pemasukan Lain</option>
               </select>
             </div>
           </>
@@ -528,7 +579,28 @@ export default function ReportsPage() {
         ) : (
           <div className="overflow-x-auto overflow-y-auto max-h-[70vh] relative print:overflow-visible">
             {/* Conditional Tables Based on Tab */}
-            {['income_daily', 'income_monthly'].includes(activeTab) && Array.isArray(data) && (
+            {['income_daily', 'income_monthly'].includes(activeTab) && Array.isArray(data) && (() => {
+              const filteredData = data.filter(tx => {
+                const isIncome = !tx.transactionCode;
+                // Payment Method Filter
+                if (filters.paymentMethod && tx.paymentMethod !== filters.paymentMethod) return false;
+                
+                // Source (Category) Filter
+                if (filters.source) {
+                  let sourceMatch = false;
+                  if (isIncome) {
+                    sourceMatch = tx.category?.toLowerCase() === filters.source;
+                  } else {
+                    const hasSpp = tx.items?.some(i => i.billingItem?.feeTemplate?.category === 'spp');
+                    if (filters.source === 'spp' && hasSpp) sourceMatch = true;
+                    if (filters.source === 'extra' && !hasSpp) sourceMatch = true;
+                  }
+                  if (!sourceMatch) return false;
+                }
+                return true;
+              });
+              
+              return (
               <table className="w-full text-left border-collapse">
                 <thead className="bg-surface-container sticky top-0 z-20">
                   <tr>
@@ -539,7 +611,7 @@ export default function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map(tx => {
+                  {filteredData.map(tx => {
                     const isIncome = !tx.transactionCode;
                     return (
                       <tr key={tx.id} className="hover:bg-surface-container-low transition-colors">
@@ -555,18 +627,18 @@ export default function ReportsPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="p-4 border-b border-outline-variant capitalize">{tx.paymentMethod}</td>
+                        <td className="p-4 border-b border-outline-variant capitalize">{tx.paymentMethod.replace('_', ' ')}</td>
                         <td className="p-4 border-b border-outline-variant text-right font-bold">{formatRupiah(tx.total || tx.amount)}</td>
                       </tr>
                     );
                   })}
                   <tr className="bg-surface-container-low font-bold">
                     <td colSpan="3" className="p-4 text-right">TOTAL PEMASUKAN</td>
-                    <td className="p-4 text-right text-primary">{formatRupiah(data.reduce((sum, tx) => sum + Number(tx.total || tx.amount || 0), 0))}</td>
+                    <td className="p-4 text-right text-primary">{formatRupiah(filteredData.reduce((sum, tx) => sum + Number(tx.total || tx.amount || 0), 0))}</td>
                   </tr>
                 </tbody>
               </table>
-            )}
+            )})()}
 
             {activeTab === 'expenses' && Array.isArray(data) && (
               <table className="w-full text-left border-collapse">

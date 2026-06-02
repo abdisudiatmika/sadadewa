@@ -5,6 +5,7 @@ export default function PublicUploadPage() {
     studentName: '',
     className: '',
     accountOwner: '',
+    destinationBank: '',
     amount: '',
     notes: '',
   });
@@ -38,6 +39,7 @@ export default function PublicUploadPage() {
     data.append('studentName', formData.studentName);
     data.append('className', formData.className);
     data.append('accountOwner', formData.accountOwner);
+    data.append('destinationBank', formData.destinationBank);
     data.append('amount', formData.amount);
     data.append('notes', formData.notes);
     data.append('file', file);
@@ -58,6 +60,7 @@ export default function PublicUploadPage() {
         studentName: '',
         className: '',
         accountOwner: '',
+        destinationBank: '',
         amount: '',
         notes: '',
       });
@@ -155,6 +158,21 @@ export default function PublicUploadPage() {
               className="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:outline-none focus:border-secondary transition-colors"
               placeholder="Contoh: Agus Santoso"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-on-surface mb-1">Bank Tujuan Transfer <span className="text-error">*</span></label>
+            <select 
+              name="destinationBank"
+              required
+              value={formData.destinationBank}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:outline-none focus:border-secondary transition-colors"
+            >
+              <option value="" disabled>Pilih Bank Tujuan</option>
+              <option value="BRI">Bank BRI</option>
+              <option value="Bukopin">Bank Bukopin</option>
+            </select>
           </div>
 
           <div>

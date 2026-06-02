@@ -16,6 +16,7 @@ export default function POSPage() {
   const [billingItems, setBillingItems] = useState([]);
   const [cart, setCart] = useState([]);
   const [useBalance, setUseBalance] = useState(false);
+  const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState('cash');
   const [processing, setProcessing] = useState(false);
   const [topArrears, setTopArrears] = useState([]);
   const searchRef = useRef(null);
@@ -100,7 +101,7 @@ export default function POSPage() {
       const checkoutRes = await api.checkout({
         studentId: selectedStudent.id,
         payments: cart.map(c => ({ billingItemId: c.id, amount: Number(c.amountToPay) })),
-        paymentMethod: useBalance ? 'balance' : 'cash',
+        paymentMethod: useBalance ? 'balance' : checkoutPaymentMethod,
       });
       
       // Open receipt in new tab
@@ -375,6 +376,23 @@ export default function POSPage() {
               </label>
             </div>
 
+            {!useBalance && (
+              <div className="mb-4">
+                <label className="block font-label-md text-on-surface-variant mb-1">Metode Pembayaran</label>
+                <select
+                  className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg font-body-md focus:border-secondary focus:outline-none"
+                  value={checkoutPaymentMethod}
+                  onChange={e => setCheckoutPaymentMethod(e.target.value)}
+                >
+                  <option value="cash">Tunai (Cash)</option>
+                  <option value="transfer_bri">Transfer Bank BRI</option>
+                  <option value="transfer_bukopin">Transfer Bank Bukopin</option>
+                  <option value="transfer_other">Transfer Lainnya</option>
+                  <option value="qris">QRIS</option>
+                </select>
+              </div>
+            )}
+
             <div className="flex justify-between items-end mb-6 pt-4 border-t border-surface-variant">
               <span className="font-headline-lg text-headline-lg text-on-background">Total</span>
               <span className="font-headline-lg text-headline-lg text-primary font-bold font-tabular-nums tracking-tight">{formatRupiah(total)}</span>
@@ -456,7 +474,9 @@ export default function POSPage() {
                   onChange={e => setIncomeForm({ ...incomeForm, paymentMethod: e.target.value })}
                 >
                   <option value="cash">Tunai (Cash)</option>
-                  <option value="transfer">Transfer Bank</option>
+                  <option value="transfer_bri">Transfer Bank BRI</option>
+                  <option value="transfer_bukopin">Transfer Bank Bukopin</option>
+                  <option value="transfer_other">Transfer Lainnya</option>
                   <option value="qris">QRIS</option>
                 </select>
               </div>

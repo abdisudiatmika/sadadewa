@@ -113,6 +113,7 @@ export default function PaymentProofsPage() {
                     </td>
                     <td className="p-4 max-w-xs">
                       <p className="font-medium text-on-surface">A.n. {proof.accountOwner}</p>
+                      {proof.destinationBank && <p className="text-sm font-bold text-secondary">Ke: Bank {proof.destinationBank}</p>}
                       {proof.notes && <p className="text-sm text-on-surface-variant truncate" title={proof.notes}>{proof.notes}</p>}
                     </td>
                     <td className="p-4 text-right font-bold text-primary">

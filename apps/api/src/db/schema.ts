@@ -58,6 +58,9 @@ export const billingStatusEnum = pgEnum("billing_status", [
 export const paymentMethodEnum = pgEnum("payment_method", [
   "cash",
   "transfer",
+  "transfer_bri",
+  "transfer_bukopin",
+  "transfer_other",
   "qris",
 ]);
 
@@ -362,6 +365,7 @@ export const paymentProofs = pgTable("payment_proofs", {
   className: varchar("class_name", { length: 50 }).notNull(),
   accountOwner: varchar("account_owner", { length: 150 }).notNull(),
   amount: integer("amount").notNull(),
+  destinationBank: varchar("destination_bank", { length: 50 }),
   notes: text("notes"),
   fileUrl: text("file_url").notNull(),
   status: paymentProofStatusEnum("status").notNull().default("pending"),

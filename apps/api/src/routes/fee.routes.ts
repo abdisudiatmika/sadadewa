@@ -7,8 +7,8 @@ import { validate } from "../middleware/validate.js";
 
 const router = Router();
 
-// All fee routes require auth + superadmin/staff role
-router.use(requireAuth, requireRole("superadmin", "staff"));
+// All fee routes require auth + superadmin/staff/bendahara_pemasukan role
+router.use(requireAuth, requireRole("superadmin", "staff", "bendahara_pemasukan"));
 
 // GET /api/fees - List fee templates
 router.get("/", async (req: Request, res: Response) => {
