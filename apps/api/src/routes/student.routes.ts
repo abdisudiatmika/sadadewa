@@ -162,6 +162,17 @@ router.post(
       const student = await studentService.create(req.body);
       res.status(201).json({ success: true, data: student });
     } catch (error: any) {
+      if (error.cause && error.cause.code === '23505') {
+        const constraint = error.cause.constraint_name || '';
+        if (constraint.includes('nisn')) {
+          res.status(400).json({ success: false, error: 'NISN sudah terdaftar di sistem. Silakan gunakan NISN lain.' });
+          return;
+        }
+        if (constraint.includes('student_code')) {
+          res.status(400).json({ success: false, error: 'Kode Siswa sudah terdaftar di sistem.' });
+          return;
+        }
+      }
       res.status(400).json({ success: false, error: error.message });
     }
   }
@@ -177,6 +188,17 @@ router.put("/:id", async (req: Request, res: Response) => {
     }
     res.json({ success: true, data: student });
   } catch (error: any) {
+    if (error.cause && error.cause.code === '23505') {
+      const constraint = error.cause.constraint_name || '';
+      if (constraint.includes('nisn')) {
+        res.status(400).json({ success: false, error: 'NISN sudah terdaftar di sistem. Silakan gunakan NISN lain.' });
+        return;
+      }
+      if (constraint.includes('student_code')) {
+        res.status(400).json({ success: false, error: 'Kode Siswa sudah terdaftar di sistem.' });
+        return;
+      }
+    }
     res.status(400).json({ success: false, error: error.message });
   }
 });
