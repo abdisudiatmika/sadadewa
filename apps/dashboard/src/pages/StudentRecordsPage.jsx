@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { api } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 const statusColors = {
   active: 'bg-secondary-container text-on-secondary-container',
@@ -43,6 +44,7 @@ export default function StudentRecordsPage() {
   const [perPage, setPerPage] = useState(25);
   const [meta, setMeta] = useState({ total: 0, totalPages: 1 });
   const fileInputRef = useRef(null);
+  const { user } = useAuth();
 
   const [showModal, setShowModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
@@ -359,13 +361,15 @@ export default function StudentRecordsPage() {
             >
               Batal
             </button>
-            <button
-              onClick={handleBulkDelete}
-              className="px-4 py-1.5 bg-error-container text-on-error-container hover:opacity-90 rounded-lg shadow-sm font-label-md flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[18px]">delete</span>
-              Hapus Masal
-            </button>
+            {user?.role !== 'bendahara_pemasukan' && (
+              <button
+                onClick={handleBulkDelete}
+                className="px-4 py-1.5 bg-error-container text-on-error-container hover:opacity-90 rounded-lg shadow-sm font-label-md flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">delete</span>
+                Hapus Masal
+              </button>
+            )}
             <button
               onClick={() => setShowPromoteModal(true)}
               className="px-4 py-1.5 bg-on-tertiary-container text-tertiary-container rounded-lg shadow-sm hover:opacity-90 transition-opacity font-label-md flex items-center gap-2"
@@ -534,20 +538,24 @@ export default function StudentRecordsPage() {
                         </span>
                       </td>
                       <td className="py-1.5 px-3 text-right">
-                        <button
-                          className="p-1 text-on-surface-variant hover:text-secondary rounded-md hover:bg-surface-container transition-colors"
-                          title="Edit"
-                          onClick={() => openEditModal(student)}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
-                        </button>
-                        <button
-                          className="p-1 text-on-surface-variant hover:text-error rounded-md hover:bg-error-container transition-colors"
-                          title="Delete"
-                          onClick={() => handleDelete(student)}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            title="Detail"
+                            className="w-8 h-8 rounded-full flex items-center justify-center bg-surface hover:bg-surface-container text-primary transition-colors border border-outline-variant"
+                            onClick={() => openEditModal(student)}
+                          >
+                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                          </button>
+                          {user?.role !== 'bendahara_pemasukan' && (
+                            <button
+                              title="Delete"
+                              onClick={() => handleDelete(student)}
+                              className="w-8 h-8 rounded-full flex items-center justify-center bg-surface hover:bg-error-container text-error hover:text-on-error-container transition-colors border border-outline-variant"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
