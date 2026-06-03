@@ -19,7 +19,7 @@ export class PaymentService {
     payments: { billingItemId: string; amount: number }[];
     amountReceived?: number;
     discountCode?: string;
-    paymentMethod: "cash" | "transfer" | "qris" | "balance";
+    paymentMethod: "cash" | "transfer" | "transfer_bri" | "transfer_bukopin" | "transfer_other" | "qris" | "balance";
     cashierId: string;
     notes?: string;
     saveToBalance?: boolean;

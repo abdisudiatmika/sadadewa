@@ -19,7 +19,7 @@ const checkoutSchema = z.object({
   })).min(1),
   amountReceived: z.number().positive().optional(),
   discountCode: z.string().optional(),
-  paymentMethod: z.enum(["cash", "transfer", "qris", "balance"]),
+  paymentMethod: z.enum(["cash", "transfer", "transfer_bri", "transfer_bukopin", "transfer_other", "qris", "balance"]),
   notes: z.string().optional(),
   saveToBalance: z.boolean().optional(),
   useBalance: z.boolean().optional(),
