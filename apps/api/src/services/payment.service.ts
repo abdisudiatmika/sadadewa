@@ -5,6 +5,7 @@ import {
   transactionItems,
   discountCodes,
   students,
+  incomes,
 } from "../db/schema.js";
 import { eq, and, inArray, sql, gte } from "drizzle-orm";
 
@@ -16,6 +17,7 @@ export class PaymentService {
   async checkout(params: {
     studentId: string;
     payments: { billingItemId: string; amount: number }[];
+    amountReceived?: number;
     discountCode?: string;
     paymentMethod: "cash" | "transfer" | "qris" | "balance";
     cashierId: string;
@@ -176,9 +178,29 @@ export class PaymentService {
       }
 
       // 10. Save excess to balance if requested
-      if (params.saveToBalance && params.paymentMethod !== "balance") {
-        // Asumsi: jika saveToBalance true, uang yg dibayar melebihi total
-        // Logic detail akan ditangani di front-end dengan mempassing nominal total sesuai yang diinput
+      let excessSaved = 0;
+      if (params.amountReceived && params.amountReceived > total) {
+        const changeAmount = params.amountReceived - total;
+        if (params.saveToBalance && params.paymentMethod !== "balance") {
+          // Potong saldo sudah ditangani (jika pakai balance), ini untuk nambah saldo.
+          await tx.update(students)
+            .set({ balance: sql`${students.balance} + ${changeAmount}` })
+            .where(eq(students.id, params.studentId));
+          
+          const depositCode = `DEP-${dateStr}-${sequence}`;
+          
+          await tx.insert(incomes).values({
+            incomeCode: depositCode,
+            amount: changeAmount,
+            category: "Titipan Saldo",
+            source: studentData.fullName,
+            description: `Simpan kembalian dari transaksi ${transactionCode}`,
+            paymentMethod: params.paymentMethod,
+            recordedBy: params.cashierId
+          });
+          
+          excessSaved = changeAmount;
+        }
       }
 
       return {
@@ -188,6 +210,9 @@ export class PaymentService {
         discountAmount,
         lateFee,
         total,
+        amountReceived: params.amountReceived || total,
+        changeAmount: (params.amountReceived && params.amountReceived > total) ? params.amountReceived - total : 0,
+        savedToBalance: excessSaved > 0,
         itemCount: items.length,
         paidAt: now.toISOString(),
       };

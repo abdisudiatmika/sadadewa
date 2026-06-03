@@ -17,6 +17,8 @@ export default function POSPage() {
   const [cart, setCart] = useState([]);
   const [useBalance, setUseBalance] = useState(false);
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState('cash');
+  const [amountReceived, setAmountReceived] = useState('');
+  const [saveChangeAsBalance, setSaveChangeAsBalance] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [topArrears, setTopArrears] = useState([]);
   const searchRef = useRef(null);
@@ -60,6 +62,9 @@ export default function POSPage() {
         setBillingItems(res.data || []);
         setCart([]);
         setUseBalance(false);
+        setCart([]);
+        setAmountReceived('');
+        setSaveChangeAsBalance(true);
       })
       .catch(console.error);
   }, [selectedStudent]);
@@ -98,9 +103,12 @@ export default function POSPage() {
     if (cart.length === 0 || !selectedStudent) return;
     setProcessing(true);
     try {
+      const numAmountReceived = Number(amountReceived) || 0;
       const checkoutRes = await api.checkout({
         studentId: selectedStudent.id,
         payments: cart.map(c => ({ billingItemId: c.id, amount: Number(c.amountToPay) })),
+        amountReceived: numAmountReceived > 0 ? numAmountReceived : undefined,
+        saveToBalance: saveChangeAsBalance,
         paymentMethod: useBalance ? 'balance' : checkoutPaymentMethod,
       });
       
@@ -112,6 +120,7 @@ export default function POSPage() {
       setBillingItems(res.data || []);
       setCart([]);
       setUseBalance(false);
+      setAmountReceived('');
       
       // Update student balance info implicitly by re-fetching student (optional, we'll just reload the page or search)
       api.getStudent(selectedStudent.id).then(res => setSelectedStudent(res.data)).catch(console.error);
@@ -391,6 +400,48 @@ export default function POSPage() {
                   <option value="qris">QRIS</option>
                 </select>
               </div>
+            )}
+
+            {/* Input Uang Diterima */}
+            {!useBalance && (
+              <>
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-body-lg text-body-lg text-on-surface-variant">Uang Diterima (Rp)</span>
+                  <div className="relative w-1/2">
+                    <input
+                      type="number"
+                      className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-lg font-tabular-nums text-right focus:border-secondary focus:outline-none"
+                      placeholder="0"
+                      value={amountReceived}
+                      onChange={(e) => setAmountReceived(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {Number(amountReceived) > total && (
+                  <div className="mb-4 p-4 bg-secondary-container/20 border border-secondary/20 rounded-lg">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-body-lg text-body-lg text-secondary font-bold">Kembalian</span>
+                      <span className="font-tabular-nums text-tabular-nums text-secondary font-bold">{formatRupiah(Number(amountReceived) - total)}</span>
+                    </div>
+                    
+                    <label className="flex items-center justify-between cursor-pointer group">
+                      <span className="font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">
+                        Simpan kembalian ke Saldo
+                      </span>
+                      <div className="relative inline-flex items-center h-5 rounded-full w-9">
+                        <input 
+                          type="checkbox" 
+                          className="peer sr-only" 
+                          checked={saveChangeAsBalance}
+                          onChange={(e) => setSaveChangeAsBalance(e.target.checked)}
+                        />
+                        <div className="w-9 h-5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface after:border-surface-variant after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-secondary"></div>
+                      </div>
+                    </label>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="flex justify-between items-end mb-6 pt-4 border-t border-surface-variant">
