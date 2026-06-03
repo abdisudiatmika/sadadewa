@@ -54,7 +54,7 @@ const createIncomeSchema = z.object({
   category: z.string().min(1),
   source: z.string().min(1),
   description: z.string().optional(),
-  paymentMethod: z.enum(["cash", "transfer", "qris"]),
+  paymentMethod: z.enum(["cash", "transfer", "transfer_bri", "transfer_bukopin", "transfer_other", "qris"]),
 });
 
 router.post(
