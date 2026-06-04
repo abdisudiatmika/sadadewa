@@ -52,6 +52,25 @@ export default function PaymentProofsPage() {
     }
   };
 
+  const handlePrintImage = (imageUrl) => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Cetak Bukti Transfer</title>
+          <style>
+            body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; bg-white; }
+            img { max-width: 100%; max-height: 100vh; object-fit: contain; }
+          </style>
+        </head>
+        <body>
+          <img src="${imageUrl}" onload="window.print(); window.close();" />
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <div className="flex-1 flex flex-col gap-6">
       <div className="flex justify-between items-center">
@@ -168,12 +187,22 @@ export default function PaymentProofsPage() {
       {selectedImage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70" onClick={() => setSelectedImage(null)}>
           <div className="relative bg-surface rounded-xl p-2 max-w-3xl max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
-            <button 
-              className="absolute top-4 right-4 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 z-10"
-              onClick={() => setSelectedImage(null)}
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
+            <div className="absolute top-4 right-4 flex gap-2 z-10">
+              <button 
+                className="bg-primary text-white rounded-full p-2 hover:bg-primary/80 shadow transition-colors flex items-center justify-center"
+                onClick={() => handlePrintImage(selectedImage)}
+                title="Cetak Foto"
+              >
+                <span className="material-symbols-outlined">print</span>
+              </button>
+              <button 
+                className="bg-black/50 text-white rounded-full p-2 hover:bg-black/70 shadow transition-colors flex items-center justify-center"
+                onClick={() => setSelectedImage(null)}
+                title="Tutup"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
             <img src={selectedImage} alt="Bukti Transfer" className="max-w-full max-h-[85vh] object-contain" />
           </div>
         </div>
