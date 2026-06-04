@@ -202,7 +202,7 @@ export default function ReportsPage() {
         'Tanggal': new Date(tx.createdAt || tx.date).toLocaleString(),
         'Sumber/Siswa': tx.student?.fullName || tx.source,
         'Item/Kategori': (!tx.transactionCode) ? `${tx.category} ${tx.description ? `(${tx.description})` : ''}` : tx.items?.map(i => i.billingItem?.feeTemplate?.name).join(', '),
-        'Metode': tx.paymentMethod,
+        'Metode': tx.paymentMethod === 'balance' ? 'Saldo Siswa' : (tx.paymentMethod ? tx.paymentMethod.replace('_', ' ') : '-'),
         'Total': tx.total || tx.amount
       }));
     } else if (activeTab === 'delinquency') {
@@ -417,6 +417,7 @@ export default function ReportsPage() {
                 <option value="transfer_other">Transfer Lainnya</option>
                 <option value="transfer">Transfer (Lama)</option>
                 <option value="qris">QRIS</option>
+                <option value="balance">Saldo Siswa</option>
               </select>
             </div>
             <div className="flex flex-col gap-2">
@@ -451,6 +452,7 @@ export default function ReportsPage() {
                 <option value="transfer_other">Transfer Lainnya</option>
                 <option value="transfer">Transfer (Lama)</option>
                 <option value="qris">QRIS</option>
+                <option value="balance">Saldo Siswa</option>
               </select>
             </div>
             <div className="flex flex-col gap-2">
@@ -627,7 +629,7 @@ export default function ReportsPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="p-4 border-b border-outline-variant capitalize">{tx.paymentMethod.replace('_', ' ')}</td>
+                        <td className="p-4 border-b border-outline-variant capitalize">{tx.paymentMethod === 'balance' ? 'Saldo Siswa' : tx.paymentMethod.replace('_', ' ')}</td>
                         <td className="p-4 border-b border-outline-variant text-right font-bold">{formatRupiah(tx.total || tx.amount)}</td>
                       </tr>
                     );

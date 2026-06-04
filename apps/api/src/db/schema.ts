@@ -62,6 +62,7 @@ export const paymentMethodEnum = pgEnum("payment_method", [
   "transfer_bukopin",
   "transfer_other",
   "qris",
+  "balance",
 ]);
 
 export const discountTypeEnum = pgEnum("discount_type", [

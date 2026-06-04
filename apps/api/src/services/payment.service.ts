@@ -142,7 +142,7 @@ export class PaymentService {
           discountAmount,
           lateFee,
           total,
-          paymentMethod: params.paymentMethod === "balance" ? "transfer" : params.paymentMethod,
+          paymentMethod: params.paymentMethod,
           notes: params.notes,
         })
         .returning();
