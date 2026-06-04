@@ -420,11 +420,6 @@ export default function POSPage() {
 
                 {Number(amountReceived) > total && (
                   <div className="mb-4 p-4 bg-secondary-container/20 border border-secondary/20 rounded-lg">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="font-body-lg text-body-lg text-secondary font-bold">Kembalian</span>
-                      <span className="font-tabular-nums text-tabular-nums text-secondary font-bold">{formatRupiah(Number(amountReceived) - total)}</span>
-                    </div>
-                    
                     <label className="flex items-center justify-between cursor-pointer group">
                       <span className="font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">
                         Simpan kembalian ke Saldo
@@ -445,8 +440,12 @@ export default function POSPage() {
             )}
 
             <div className="flex justify-between items-end mb-6 pt-4 border-t border-surface-variant">
-              <span className="font-headline-lg text-headline-lg text-on-background">Total</span>
-              <span className="font-headline-lg text-headline-lg text-primary font-bold font-tabular-nums tracking-tight">{formatRupiah(total)}</span>
+              <span className={`font-headline-lg text-headline-lg ${Number(amountReceived) > 0 && Number(amountReceived) < total ? 'text-error' : 'text-on-background'}`}>
+                {!amountReceived ? 'Total' : Number(amountReceived) > total ? 'Kembalian' : Number(amountReceived) < total ? 'Kurang Bayar' : 'Total'}
+              </span>
+              <span className={`font-headline-lg text-headline-lg font-bold font-tabular-nums tracking-tight ${Number(amountReceived) > 0 && Number(amountReceived) < total ? 'text-error' : 'text-primary'}`}>
+                {formatRupiah(!amountReceived ? total : Math.abs(total - Number(amountReceived)))}
+              </span>
             </div>
 
             <button
