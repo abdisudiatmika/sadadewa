@@ -272,7 +272,7 @@ export class PaymentService {
    * Get a single transaction by ID with full details.
    */
   async getTransactionById(id: string) {
-    return db.query.transactions.findFirst({
+    const transaction = await db.query.transactions.findFirst({
       where: eq(transactions.id, id),
       with: {
         student: true,
@@ -286,6 +286,18 @@ export class PaymentService {
         },
       },
     });
+
+    if (!transaction) return undefined;
+
+    const [income] = await db
+      .select()
+      .from(incomes)
+      .where(eq(incomes.description, `Simpan kembalian dari transaksi ${transaction.transactionCode}`));
+
+    return {
+      ...transaction,
+      savedToBalanceAmount: income ? income.amount : 0
+    };
   }
 
   /**

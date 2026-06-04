@@ -51,7 +51,10 @@ export default function ReceiptPage() {
   if (loading) return <div className="p-8">Loading receipt...</div>;
   if (!transaction) return <div className="p-8">Receipt not found. <button onClick={() => navigate('/pos')} className="underline text-blue-500 ml-2">Back to POS</button></div>;
 
-  const terbilangText = terbilang(transaction.total).trim() + ' Rupiah';
+  const overpayment = transaction.savedToBalanceAmount || 0;
+  const displayTotal = transaction.total + overpayment;
+
+  const terbilangText = terbilang(displayTotal).trim() + ' Rupiah';
   
   // Group fees and show paid amounts
   const feeDetails = transaction.items.map(item => {
@@ -72,6 +75,10 @@ export default function ReceiptPage() {
   Object.entries(feeMap).forEach(([name, count]) => {
     finalFeeStrings.push(count > 1 ? `${name} (${count}x)` : name);
   });
+  
+  if (overpayment > 0) {
+    finalFeeStrings.push(`Titipan Saldo (Rp ${overpayment.toLocaleString('id-ID')})`);
+  }
   
   const feeNames = finalFeeStrings.join(', ');
 
@@ -168,7 +175,7 @@ export default function ReceiptPage() {
              <div className="flex items-center text-base font-bold mt-1">
                <span className="mr-3 tracking-wide">Jumlah Rp.</span>
                <div className="border-y-[1.5px] border-gray-800 min-w-[140px] px-3 py-1 bg-gray-100 text-center text-lg tracking-wider" style={{"clipPath": "polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0% 100%)", WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact'}}>
-                  {transaction.total.toLocaleString('id-ID')}
+                  {displayTotal.toLocaleString('id-ID')}
                </div>
              </div>
           </div>
