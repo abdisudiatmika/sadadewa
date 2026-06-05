@@ -34,6 +34,15 @@ export default function POSPage() {
   });
   const [savingIncome, setSavingIncome] = useState(false);
 
+  // Top Up Modal States
+  const [showTopUpModal, setShowTopUpModal] = useState(false);
+  const [topUpForm, setTopUpForm] = useState({
+    amount: '',
+    paymentMethod: 'cash',
+    notes: '',
+  });
+  const [savingTopUp, setSavingTopUp] = useState(false);
+
   // Load top arrears initially
   useEffect(() => {
     api.getTopArrears(15)
@@ -157,6 +166,28 @@ export default function POSPage() {
     }
   };
 
+  const handleTopUpSubmit = async (e) => {
+    e.preventDefault();
+    setSavingTopUp(true);
+    try {
+      const res = await api.topUpStudentBalance(selectedStudent.id, {
+        amount: Number(topUpForm.amount),
+        paymentMethod: topUpForm.paymentMethod,
+        notes: topUpForm.notes,
+      });
+      setShowTopUpModal(false);
+      setTopUpForm({ amount: '', paymentMethod: 'cash', notes: '' });
+      // Update local balance
+      setSelectedStudent({ ...selectedStudent, balance: (selectedStudent.balance || 0) + Number(topUpForm.amount) });
+      // Open receipt
+      window.open(`/receipt-income/${res.data.id}`, '_blank');
+    } catch (err) {
+      alert('Gagal menambah saldo: ' + err.message);
+    } finally {
+      setSavingTopUp(false);
+    }
+  };
+
   return (
     <div className="flex-1 flex w-full h-full overflow-hidden flex-row">
       {/* Left Side: Selection & Status (60%) */}
@@ -221,9 +252,15 @@ export default function POSPage() {
                 </div>
               </div>
               <div className="text-right flex gap-6">
-                <div>
+                <div className="flex flex-col items-end">
                   <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider m-0 mb-1">Saldo Siswa</p>
-                  <p className="font-headline-sm text-headline-sm text-primary font-bold font-tabular-nums m-0">{formatRupiah(selectedStudent.balance || 0)}</p>
+                  <p className="font-headline-sm text-headline-sm text-primary font-bold font-tabular-nums m-0 mb-2">{formatRupiah(selectedStudent.balance || 0)}</p>
+                  <button 
+                    onClick={() => setShowTopUpModal(true)}
+                    className="text-xs font-semibold bg-primary-container text-on-primary-container px-2 py-1 rounded-md border border-primary/20 hover:bg-primary hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">add</span> Top Up
+                  </button>
                 </div>
                 <div>
                   <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider m-0 mb-1">Total Tunggakan</p>
@@ -570,6 +607,95 @@ export default function POSPage() {
         </div>
       )}
 
+      {/* MODAL TOP UP SALDO */}
+      {showTopUpModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-surface w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95">
+            <div className="flex justify-between items-center p-6 border-b border-outline-variant">
+              <h3 className="font-headline-sm text-on-surface m-0">Top Up Saldo Siswa</h3>
+              <button 
+                onClick={() => setShowTopUpModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container text-on-surface-variant"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            
+            <form onSubmit={handleTopUpSubmit} className="p-6 flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <label className="font-label-md text-on-surface-variant">Siswa</label>
+                <input 
+                  type="text" 
+                  disabled
+                  value={selectedStudent?.fullName || ''}
+                  className="bg-surface-container-low border border-outline-variant rounded-lg p-3 font-body-md text-on-surface opacity-70"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-label-md text-on-surface-variant text-error font-bold">Nominal Top Up *</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-medium">Rp</span>
+                  <input 
+                    type="number" 
+                    required
+                    min="1000"
+                    placeholder="Contoh: 500000"
+                    value={topUpForm.amount}
+                    onChange={(e) => setTopUpForm({...topUpForm, amount: e.target.value})}
+                    className="w-full pl-10 pr-3 py-3 bg-surface border-2 border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-lg font-body-md text-on-surface text-lg font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-label-md text-on-surface-variant">Metode Pembayaran *</label>
+                <select
+                  required
+                  value={topUpForm.paymentMethod}
+                  onChange={(e) => setTopUpForm({...topUpForm, paymentMethod: e.target.value})}
+                  className="w-full p-3 bg-surface border border-outline-variant rounded-lg font-body-md text-on-surface focus:border-primary pr-10"
+                >
+                  <option value="cash">Tunai (Cash)</option>
+                  <option value="transfer">Transfer</option>
+                  <option value="transfer_bri">Transfer BRI</option>
+                  <option value="transfer_bukopin">Transfer Bukopin</option>
+                  <option value="transfer_other">Transfer Bank Lain</option>
+                  <option value="qris">QRIS</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="font-label-md text-on-surface-variant">Keterangan (Opsional)</label>
+                <textarea 
+                  placeholder="Titipan dari orang tua, dll."
+                  value={topUpForm.notes}
+                  onChange={(e) => setTopUpForm({...topUpForm, notes: e.target.value})}
+                  className="w-full p-3 bg-surface border border-outline-variant rounded-lg font-body-md text-on-surface h-20 resize-none focus:border-primary"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-2">
+                <button 
+                  type="button"
+                  onClick={() => setShowTopUpModal(false)}
+                  className="px-5 py-2.5 rounded-lg font-label-lg font-medium text-on-surface-variant hover:bg-surface-container"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit"
+                  disabled={savingTopUp || !topUpForm.amount}
+                  className="px-5 py-2.5 rounded-lg font-label-lg font-medium bg-primary text-white hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                >
+                  {savingTopUp ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>}
+                  Simpan Top Up
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

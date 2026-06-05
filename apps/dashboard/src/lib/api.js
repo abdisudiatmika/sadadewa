@@ -138,6 +138,9 @@ export const api = {
   bulkDeleteStudents: (studentIds) =>
     request('/api/students/bulk-delete', { method: 'POST', body: JSON.stringify({ studentIds }) }),
 
+  topUpStudentBalance: (id, data) =>
+    request(`/api/students/${id}/topup`, { method: 'POST', body: JSON.stringify(data) }),
+
   bulkUploadArrears: (records) => request('/api/billing/bulk-arrears', { method: 'POST', body: JSON.stringify(records) }),
 
   resetArrears: () => request('/api/billing/reset-arrears', { method: 'DELETE' }),

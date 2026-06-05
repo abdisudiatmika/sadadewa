@@ -135,6 +135,32 @@ router.get("/:id/billing", async (req: Request, res: Response) => {
   }
 });
 
+const topUpSchema = z.object({
+  amount: z.number().positive(),
+  paymentMethod: z.enum(["cash", "transfer", "transfer_bri", "transfer_bukopin", "transfer_other", "qris", "balance"]),
+  notes: z.string().optional(),
+});
+
+// POST /api/students/:id/topup - Top up student balance manually
+router.post(
+  "/:id/topup",
+  requireRole("admin", "superadmin", "staff", "bendahara_pemasukan"),
+  validate({ body: topUpSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const income = await studentService.topUpBalance(req.params.id as string, {
+        amount: req.body.amount,
+        paymentMethod: req.body.paymentMethod,
+        notes: req.body.notes,
+        recordedBy: req.user!.id,
+      });
+      res.json({ success: true, data: income });
+    } catch (error: any) {
+      res.status(400).json({ success: false, error: error.message });
+    }
+  }
+);
+
 // POST /api/students - Create a new student
 const createStudentSchema = z.object({
   studentCode: z.string().max(20).optional().or(z.literal("")),

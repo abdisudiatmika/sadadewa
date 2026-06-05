@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
-import { students, classes, grades, studentClasses, academicYears, user } from "../db/schema.js";
-import { eq, ilike, and, or, sql, count, inArray } from "drizzle-orm";
+import { students, classes, grades, studentClasses, academicYears, user, incomes } from "../db/schema.js";
+import { eq, ilike, and, or, sql, count, inArray, desc } from "drizzle-orm";
 import { userService } from "./user.service.js";
 
 export class StudentService {
@@ -444,6 +444,74 @@ export class StudentService {
       .returning();
 
     return result.length;
+  }
+
+  /**
+   * Top up student balance manually.
+   */
+  async topUpBalance(
+    studentId: string,
+    data: {
+      amount: number;
+      paymentMethod: string;
+      notes?: string;
+      recordedBy: string;
+    }
+  ) {
+    const student = await db.query.students.findFirst({
+      where: eq(students.id, studentId),
+    });
+
+    if (!student) throw new Error("Siswa tidak ditemukan");
+
+    return db.transaction(async (tx) => {
+      // 1. Update balance
+      await tx
+        .update(students)
+        .set({ balance: sql`${students.balance} + ${data.amount}` })
+        .where(eq(students.id, studentId));
+
+      // 2. Generate income code
+      const date = new Date();
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear().toString().slice(-2);
+      const prefix = `INC-${day}${month}${year}-`;
+
+      const latest = await tx
+        .select({ code: incomes.incomeCode })
+        .from(incomes)
+        .where(ilike(incomes.incomeCode, `${prefix}%`))
+        .orderBy(desc(incomes.incomeCode))
+        .limit(1);
+
+      let code = `${prefix}0001`;
+      if (latest.length > 0 && latest[0].code) {
+        const parts = latest[0].code.split("-");
+        const lastNum = parseInt(parts[2]);
+        if (!isNaN(lastNum)) {
+          const newNum = (lastNum + 1).toString().padStart(4, "0");
+          code = `${prefix}${newNum}`;
+        }
+      }
+
+      // 3. Create income record
+      const [income] = await tx
+        .insert(incomes)
+        .values({
+          incomeCode: code,
+          amount: data.amount,
+          category: "Titipan Saldo",
+          source: student.fullName,
+          description: data.notes || `Top up saldo manual`,
+          paymentMethod: data.paymentMethod as any,
+          recordedBy: data.recordedBy,
+          date: new Date(),
+        })
+        .returning();
+
+      return income;
+    });
   }
 }
 

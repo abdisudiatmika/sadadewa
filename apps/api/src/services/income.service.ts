@@ -89,9 +89,10 @@ export class IncomeService {
    */
   async generateIncomeCode() {
     const date = new Date();
-    const year = date.getFullYear().toString().slice(-2);
+    const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const prefix = `INC-${year}${month}-`;
+    const year = date.getFullYear().toString().slice(-2);
+    const prefix = `INC-${day}${month}${year}-`;
 
     const latest = await db
       .select({ code: incomes.incomeCode })
