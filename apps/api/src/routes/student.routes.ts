@@ -7,6 +7,9 @@ import os from "os";
 import fs from "fs";
 import { studentService } from "../services/student.service.js";
 import { billingService } from "../services/billing.service.js";
+import { db } from "../db/index.js";
+import { students, incomes } from "../db/schema.js";
+import { eq, desc } from "drizzle-orm";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 
