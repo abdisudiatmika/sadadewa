@@ -147,7 +147,7 @@ const topUpSchema = z.object({
 // GET /api/students/:id/incomes - Get incomes (Pemasukan Lain/Top Up) for a student
 router.get("/:id/incomes", async (req: Request, res: Response) => {
   try {
-    const student = await db.query.students.findFirst({ where: eq(students.id, req.params.id) });
+    const student = await db.query.students.findFirst({ where: eq(students.id, req.params.id as string) });
     if (!student) {
       res.status(404).json({ success: false, error: "Student not found" });
       return;
