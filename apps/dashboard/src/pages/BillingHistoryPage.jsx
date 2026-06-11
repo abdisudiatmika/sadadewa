@@ -57,7 +57,39 @@ export default function BillingHistoryPage() {
         startDate: startDate || undefined,
         endDate: endDate || undefined
       });
-      setTransactions(res.data || []);
+      let finalData = res.data || [];
+      
+      if (studentId) {
+        // Fetch incomes for this student (Top Up / Pemasukan Lain)
+        const incRes = await api.getStudentIncomes(studentId);
+        const incomesData = incRes.data || [];
+        
+        // Filter by date if necessary, as the backend endpoint might not support date filtering
+        const filteredIncomes = incomesData.filter(inc => {
+          if (startDate && new Date(inc.date) < new Date(startDate)) return false;
+          if (endDate) {
+            const endD = new Date(endDate);
+            endD.setHours(23, 59, 59, 999);
+            if (new Date(inc.date) > endD) return false;
+          }
+          return true;
+        });
+
+        const mappedIncomes = filteredIncomes.map(inc => ({
+          id: inc.id,
+          transactionCode: inc.incomeCode,
+          createdAt: inc.date,
+          student: { fullName: inc.source },
+          paymentMethod: inc.paymentMethod,
+          total: inc.amount,
+          items: [{ billingItem: { feeTemplate: { name: inc.category } } }],
+          isIncome: true
+        }));
+        
+        finalData = [...finalData, ...mappedIncomes].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      }
+
+      setTransactions(finalData);
     } catch (err) {
       console.error('Failed to fetch transactions:', err);
     } finally {
@@ -381,7 +413,7 @@ export default function BillingHistoryPage() {
                     <tr 
                       key={tx.id} 
                       className="hover:bg-surface-container-low transition-colors group cursor-pointer"
-                      onClick={() => viewReceipt(tx.id)}
+                      onClick={() => tx.isIncome ? window.open(`/receipt-income/${tx.id}`, '_blank') : viewReceipt(tx.id)}
                     >
                       <td className="p-4 border-b border-outline-variant font-tabular-nums text-tabular-nums font-bold text-primary">
                         {tx.transactionCode}
@@ -432,13 +464,16 @@ export default function BillingHistoryPage() {
                       <td className="p-4 border-b border-outline-variant text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
-                            onClick={() => viewReceipt(tx.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              tx.isIncome ? window.open(`/receipt-income/${tx.id}`, '_blank') : viewReceipt(tx.id);
+                            }}
                             className="p-2 hover:bg-secondary-container text-secondary rounded-lg transition-all active:scale-95 flex items-center justify-center"
                             title="Cetak Kwitansi"
                           >
                             <span className="material-symbols-outlined">print</span>
                           </button>
-                          {user?.role === 'superadmin' && (
+                          {user?.role === 'superadmin' && !tx.isIncome && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleCancelTransaction(tx.id, tx.transactionCode); }}
                               className="p-2 hover:bg-error-container text-error rounded-lg transition-all active:scale-95 flex items-center justify-center relative z-10"

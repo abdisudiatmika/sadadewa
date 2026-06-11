@@ -141,6 +141,8 @@ export const api = {
   topUpStudentBalance: (id, data) =>
     request(`/api/students/${id}/topup`, { method: 'POST', body: JSON.stringify(data) }),
 
+  getStudentIncomes: (id) => request(`/api/students/${id}/incomes`),
+
   bulkUploadArrears: (records) => request('/api/billing/bulk-arrears', { method: 'POST', body: JSON.stringify(records) }),
 
   resetArrears: () => request('/api/billing/reset-arrears', { method: 'DELETE' }),

@@ -141,6 +141,26 @@ const topUpSchema = z.object({
   notes: z.string().optional(),
 });
 
+// GET /api/students/:id/incomes - Get incomes (Pemasukan Lain/Top Up) for a student
+router.get("/:id/incomes", async (req: Request, res: Response) => {
+  try {
+    const student = await db.query.students.findFirst({ where: eq(students.id, req.params.id) });
+    if (!student) {
+      res.status(404).json({ success: false, error: "Student not found" });
+      return;
+    }
+
+    const data = await db.query.incomes.findMany({
+      where: eq(incomes.source, student.fullName),
+      orderBy: (inc, { desc }) => [desc(inc.date)],
+    });
+
+    res.json({ success: true, data });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // POST /api/students/:id/topup - Top up student balance manually
 router.post(
   "/:id/topup",
