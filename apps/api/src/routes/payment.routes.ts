@@ -49,6 +49,7 @@ router.get("/", async (req: Request, res: Response) => {
       page: Number(req.query.page) || 1,
       perPage: Number(req.query.perPage) || 20,
       studentId: req.query.studentId as string,
+      search: req.query.search as string,
       startDate: req.query.startDate as string,
       endDate: req.query.endDate as string,
     });

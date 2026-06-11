@@ -7,7 +7,7 @@ import {
   students,
   incomes,
 } from "../db/schema.js";
-import { eq, and, inArray, sql, gte } from "drizzle-orm";
+import { eq, and, inArray, sql, gte, ilike, or } from "drizzle-orm";
 
 export class PaymentService {
   /**
@@ -226,6 +226,7 @@ export class PaymentService {
     page?: number; 
     perPage?: number; 
     studentId?: string;
+    search?: string;
     startDate?: string;
     endDate?: string;
   }) {
@@ -238,6 +239,18 @@ export class PaymentService {
       conditions.push(eq(transactions.studentId, params.studentId));
     }
     
+    if (params.search) {
+      conditions.push(
+        or(
+          ilike(transactions.transactionCode, `%${params.search}%`),
+          inArray(
+            transactions.studentId,
+            db.select({ id: students.id }).from(students).where(ilike(students.fullName, `%${params.search}%`))
+          )
+        )
+      );
+    }
+
     if (params.startDate) {
       conditions.push(sql`${transactions.createdAt} >= ${params.startDate}`);
     }

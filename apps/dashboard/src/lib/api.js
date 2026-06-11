@@ -196,6 +196,7 @@ export const api = {
     if (params.page) query.set('page', params.page);
     if (params.perPage) query.set('perPage', params.perPage);
     if (params.studentId) query.set('studentId', params.studentId);
+    if (params.search) query.set('search', params.search);
     if (params.startDate) query.set('startDate', params.startDate);
     if (params.endDate) query.set('endDate', params.endDate);
     return request(`/api/payments?${query.toString()}`);

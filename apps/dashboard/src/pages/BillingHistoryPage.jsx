@@ -37,9 +37,16 @@ export default function BillingHistoryPage() {
   const [newAmount, setNewAmount] = useState('');
   const [savingBill, setSavingBill] = useState(false);
 
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 500);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   useEffect(() => {
     fetchTransactions();
-  }, [page, perPage, studentId, startDate, endDate]);
+  }, [page, perPage, studentId, startDate, endDate, debouncedSearch]);
 
   useEffect(() => {
     if (studentId) {
@@ -54,6 +61,7 @@ export default function BillingHistoryPage() {
         page, 
         perPage, 
         studentId,
+        search: debouncedSearch || undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined
       });
@@ -89,7 +97,7 @@ export default function BillingHistoryPage() {
         finalData = [...finalData, ...mappedIncomes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       } else {
         // Fetch general incomes for global view
-        const incRes = await api.getIncomes({ page, perPage });
+        const incRes = await api.getIncomes({ page, perPage, search: debouncedSearch || undefined });
         const incomesData = incRes.data || [];
         
         const mappedIncomes = incomesData.map(inc => ({
@@ -133,10 +141,7 @@ export default function BillingHistoryPage() {
     setPage(1);
   };
 
-  const filteredTransactions = transactions.filter(tx => 
-    tx.transactionCode.toLowerCase().includes(search.toLowerCase()) ||
-    tx.student?.fullName.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredTransactions = transactions;
 
   const viewReceipt = (id) => {
     window.open(`/receipt/${id}`, '_blank');
