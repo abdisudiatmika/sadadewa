@@ -86,7 +86,24 @@ export default function BillingHistoryPage() {
           isIncome: true
         }));
         
-        finalData = [...finalData, ...mappedIncomes].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        finalData = [...finalData, ...mappedIncomes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      } else {
+        // Fetch general incomes for global view
+        const incRes = await api.getIncomes({ page, perPage });
+        const incomesData = incRes.data || [];
+        
+        const mappedIncomes = incomesData.map(inc => ({
+          id: inc.id,
+          transactionCode: inc.incomeCode,
+          createdAt: inc.date,
+          student: { fullName: inc.source },
+          paymentMethod: inc.paymentMethod,
+          total: inc.amount,
+          items: [{ billingItem: { feeTemplate: { name: inc.category } } }],
+          isIncome: true
+        }));
+
+        finalData = [...finalData, ...mappedIncomes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       }
 
       setTransactions(finalData);
