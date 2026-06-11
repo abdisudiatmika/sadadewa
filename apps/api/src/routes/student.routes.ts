@@ -9,7 +9,7 @@ import { studentService } from "../services/student.service.js";
 import { billingService } from "../services/billing.service.js";
 import { db } from "../db/index.js";
 import { students, incomes } from "../db/schema.js";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, ilike } from "drizzle-orm";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 
@@ -154,7 +154,7 @@ router.get("/:id/incomes", async (req: Request, res: Response) => {
     }
 
     const data = await db.query.incomes.findMany({
-      where: eq(incomes.source, student.fullName),
+      where: ilike(incomes.source, `%${student.fullName}%`),
       orderBy: (inc, { desc }) => [desc(inc.date)],
     });
 
