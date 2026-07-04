@@ -8,8 +8,8 @@ import fs from "fs";
 import { studentService } from "../services/student.service.js";
 import { billingService } from "../services/billing.service.js";
 import { db } from "../db/index.js";
-import { students, incomes } from "../db/schema.js";
-import { eq, desc, ilike } from "drizzle-orm";
+import { students, incomes, studentClasses } from "../db/schema.js";
+import { eq, desc, ilike, inArray } from "drizzle-orm";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
 
@@ -316,6 +316,42 @@ router.post("/bulk-graduate", async (req: Request, res: Response) => {
 
     const count = await studentService.bulkGraduate(studentIds);
     res.json({ success: true, count });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET /api/students/fix-data/classes - One-time script to fix students with multiple active classes
+router.get("/fix-data/classes", async (req: Request, res: Response) => {
+  try {
+    const allActiveClasses = await db.query.studentClasses.findMany({
+      where: eq(studentClasses.status, "active"),
+      orderBy: [desc(studentClasses.createdAt)]
+    });
+
+    const studentToClasses = new Map<string, any[]>();
+    for (const c of allActiveClasses) {
+      if (!studentToClasses.has(c.studentId)) {
+        studentToClasses.set(c.studentId, []);
+      }
+      studentToClasses.get(c.studentId)!.push(c);
+    }
+
+    let fixedCount = 0;
+    for (const [studentId, classes] of studentToClasses.entries()) {
+      if (classes.length > 1) {
+        // Keep the first one (most recent), deactivate the rest
+        const toDeactivate = classes.slice(1).map(c => c.id);
+        if (toDeactivate.length > 0) {
+          await db.update(studentClasses)
+            .set({ status: "inactive" })
+            .where(inArray(studentClasses.id, toDeactivate));
+          fixedCount += toDeactivate.length;
+        }
+      }
+    }
+
+    res.json({ success: true, message: `Fixed ${fixedCount} duplicate active class records.` });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
