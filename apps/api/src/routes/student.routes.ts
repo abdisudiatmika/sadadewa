@@ -305,4 +305,20 @@ router.post("/bulk-delete", async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/students/bulk-graduate - Bulk graduate students (sets status to graduated and studentClasses to inactive)
+router.post("/bulk-graduate", async (req: Request, res: Response) => {
+  try {
+    const { studentIds } = req.body;
+    if (!Array.isArray(studentIds) || studentIds.length === 0) {
+      res.status(400).json({ success: false, error: "studentIds array is required" });
+      return;
+    }
+
+    const count = await studentService.bulkGraduate(studentIds);
+    res.json({ success: true, count });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

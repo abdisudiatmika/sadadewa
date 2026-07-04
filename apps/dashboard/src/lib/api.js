@@ -157,6 +157,9 @@ export const api = {
   promoteStudents: (data) =>
     request('/api/students/promote', { method: 'POST', body: JSON.stringify(data) }),
 
+  bulkGraduateStudents: (studentIds) =>
+    request('/api/students/bulk-graduate', { method: 'POST', body: JSON.stringify({ studentIds }) }),
+
   // ---- Fees ----
   getFees: (params = {}) => {
     const query = new URLSearchParams();

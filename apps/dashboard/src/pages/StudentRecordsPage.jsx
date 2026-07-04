@@ -213,6 +213,22 @@ export default function StudentRecordsPage() {
     }
   };
 
+  const handleGraduate = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Anda yakin ingin meluluskan ${selectedIds.size} siswa terpilih?`)) return;
+    setSaving(true);
+    try {
+      await api.bulkGraduateStudents(Array.from(selectedIds));
+      alert('✅ Siswa berhasil diluluskan!');
+      setSelectedIds(new Set());
+      fetchStudents();
+    } catch (err) {
+      alert('Gagal meluluskan siswa: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const updateField = (field, value) => setForm(f => ({ ...f, [field]: value }));
 
   const handleDownloadTemplate = async () => {
@@ -362,21 +378,30 @@ export default function StudentRecordsPage() {
               Batal
             </button>
             {user?.role !== 'bendahara_pemasukan' && (
-              <button
-                onClick={handleBulkDelete}
-                className="px-4 py-1.5 bg-error-container text-on-error-container hover:opacity-90 rounded-lg shadow-sm font-label-md flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-[18px]">delete</span>
-                Hapus Masal
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowPromoteModal(true)}
+                  className="px-4 py-1.5 bg-on-tertiary-container text-tertiary-container rounded-lg shadow-sm hover:opacity-90 transition-opacity font-label-md flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">upgrade</span>
+                  Mutasi / Naik Kelas
+                </button>
+                <button
+                  onClick={handleGraduate}
+                  className="px-4 py-1.5 bg-green-700 text-white rounded-lg shadow-sm hover:opacity-90 transition-opacity font-label-md flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">school</span>
+                  Luluskan
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="px-4 py-1.5 bg-error-container text-on-error-container hover:opacity-90 rounded-lg shadow-sm font-label-md flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">delete</span>
+                  Hapus Masal
+                </button>
+              </div>
             )}
-            <button
-              onClick={() => setShowPromoteModal(true)}
-              className="px-4 py-1.5 bg-on-tertiary-container text-tertiary-container rounded-lg shadow-sm hover:opacity-90 transition-opacity font-label-md flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[18px]">upgrade</span>
-              Mutasi / Naik Kelas
-            </button>
           </div>
         </div>
       )}

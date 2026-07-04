@@ -406,6 +406,17 @@ export class StudentService {
   }) {
     if (data.studentIds.length === 0) return 0;
 
+    // Update existing active class records to inactive for these students
+    await db
+      .update(studentClasses)
+      .set({ status: "inactive" })
+      .where(
+        and(
+          inArray(studentClasses.studentId, data.studentIds),
+          eq(studentClasses.status, "active")
+        )
+      );
+
     const values = data.studentIds.map(studentId => ({
       studentId,
       classId: data.newClassId,
@@ -512,6 +523,32 @@ export class StudentService {
 
       return income;
     });
+  }
+
+  /**
+   * Bulk graduate students.
+   */
+  async bulkGraduate(ids: string[]) {
+    if (ids.length === 0) return 0;
+
+    // Update students status to graduated
+    await db
+      .update(students)
+      .set({ status: "graduated" })
+      .where(inArray(students.id, ids));
+
+    // Update existing active class records to inactive for these students
+    await db
+      .update(studentClasses)
+      .set({ status: "inactive" })
+      .where(
+        and(
+          inArray(studentClasses.studentId, ids),
+          eq(studentClasses.status, "active")
+        )
+      );
+
+    return ids.length;
   }
 }
 
