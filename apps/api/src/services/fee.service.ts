@@ -233,15 +233,28 @@ export class FeeService {
 
     if (targetStudents.length === 0) return { generated: 0 };
 
+    // Get academic year details to determine the actual calendar years
+    const [academicYear] = await db
+      .select()
+      .from(academicYears)
+      .where(eq(academicYears.id, template.academicYearId));
+      
+    if (!academicYear) throw new Error("Academic year not found");
+    
+    // Parse the start year from startDate (e.g. "2026-07-01" -> 2026)
+    const startYear = new Date(academicYear.startDate).getFullYear();
+    const endYear = startYear + 1;
+
     // Determine billing periods
     const periods: Array<{ month: number | null; year: number }> = [];
 
     if (template.frequency === "monthly") {
-      // Generate for months 7-6 (Jul to Jun academic year)
-      for (let m = 7; m <= 12; m++) periods.push({ month: m, year: 2023 });
-      for (let m = 1; m <= 6; m++) periods.push({ month: m, year: 2024 });
+      // Generate for months 7-12 (Jul to Dec) using startYear
+      for (let m = 7; m <= 12; m++) periods.push({ month: m, year: startYear });
+      // Generate for months 1-6 (Jan to Jun) using endYear
+      for (let m = 1; m <= 6; m++) periods.push({ month: m, year: endYear });
     } else {
-      periods.push({ month: null, year: 2023 });
+      periods.push({ month: null, year: startYear });
     }
 
     const values = targetStudents.flatMap((student) =>
