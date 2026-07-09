@@ -8,7 +8,7 @@ import {
   studentClasses,
   classes,
 } from "../db/schema.js";
-import { eq, ilike, and, count, sql } from "drizzle-orm";
+import { eq, ilike, and, count, sql, or } from "drizzle-orm";
 
 export class FeeService {
   /**
@@ -187,9 +187,22 @@ export class FeeService {
   }
 
   /**
-   * Delete a fee template.
+   * Delete a fee template. Prevents deletion if there are already paid bills.
    */
   async delete(id: string) {
+    // Check if there are any paid bills associated with this template
+    const [paidBillsCount] = await db
+      .select({ count: count() })
+      .from(billingItems)
+      .where(and(
+        eq(billingItems.feeTemplateId, id),
+        eq(billingItems.status, "paid")
+      ));
+
+    if (paidBillsCount && paidBillsCount.count > 0) {
+      throw new Error(`Tidak bisa menghapus master biaya ini karena sudah ada ${paidBillsCount.count} tagihan yang dibayar oleh siswa.`);
+    }
+
     const [deleted] = await db
       .delete(feeTemplates)
       .where(eq(feeTemplates.id, id))
@@ -278,6 +291,21 @@ export class FeeService {
       .returning();
 
     return { generated: inserted.length };
+  }
+
+  /**
+   * Delete only UNPAID or OVERDUE bills for a specific fee template
+   */
+  async deleteUnpaidBills(feeTemplateId: string) {
+    const deleted = await db
+      .delete(billingItems)
+      .where(and(
+        eq(billingItems.feeTemplateId, feeTemplateId),
+        or(eq(billingItems.status, "unpaid"), eq(billingItems.status, "overdue"))
+      ))
+      .returning();
+
+    return { deletedBills: deleted.length };
   }
 }
 
