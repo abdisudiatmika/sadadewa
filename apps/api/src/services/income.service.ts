@@ -140,6 +140,22 @@ export class IncomeService {
 
     return income;
   }
+
+  /**
+   * Delete an income record
+   */
+  async delete(id: string) {
+    const [deleted] = await db
+      .delete(incomes)
+      .where(eq(incomes.id, id))
+      .returning();
+      
+    if (!deleted) {
+      throw new Error("Pemasukan tidak ditemukan");
+    }
+    
+    return deleted;
+  }
 }
 
 export const incomeService = new IncomeService();

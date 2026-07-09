@@ -147,14 +147,18 @@ export default function BillingHistoryPage() {
     window.open(`/receipt/${id}`, '_blank');
   };
 
-  const handleCancelTransaction = async (id, code) => {
+  const handleCancelTransaction = async (id, code, isIncome) => {
     if (!window.confirm(`Yakin ingin MEMBATALKAN transaksi ${code}? \n\nIni akan mengembalikan tagihan menjadi belum lunas (Atau mengurangi cicilan) dan menghapus transaksi ini dari laporan. Tindakan ini tidak bisa dibatalkan.`)) {
       return;
     }
     
     try {
       setLoading(true);
-      await api.cancelTransaction(id);
+      if (isIncome) {
+        await api.deleteIncome(id);
+      } else {
+        await api.cancelTransaction(id);
+      }
       alert('Transaksi berhasil dibatalkan dan dihapus.');
       fetchTransactions();
       if (studentId) fetchBilling();
@@ -495,9 +499,9 @@ export default function BillingHistoryPage() {
                           >
                             <span className="material-symbols-outlined">print</span>
                           </button>
-                          {['superadmin', 'admin', 'staff', 'bendahara_pemasukan'].includes(user?.role) && !tx.isIncome && (
+                          {['superadmin', 'admin', 'staff', 'bendahara_pemasukan'].includes(user?.role) && (
                             <button
-                              onClick={(e) => { e.stopPropagation(); handleCancelTransaction(tx.id, tx.transactionCode); }}
+                              onClick={(e) => { e.stopPropagation(); handleCancelTransaction(tx.id, tx.transactionCode, tx.isIncome); }}
                               className="p-2 hover:bg-error-container text-error rounded-lg transition-all active:scale-95 flex items-center justify-center relative z-10"
                               title="Batalkan (Reset) Transaksi"
                             >

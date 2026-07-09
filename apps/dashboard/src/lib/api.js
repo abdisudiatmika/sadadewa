@@ -226,6 +226,8 @@ export const api = {
   },
   getIncome: (id) =>
     request(`/api/incomes/${id}`),
+  deleteIncome: (id) =>
+    request(`/api/incomes/${id}`, { method: 'DELETE' }),
   createIncome: (data) =>
     request('/api/incomes', { method: 'POST', body: JSON.stringify(data) }),
 

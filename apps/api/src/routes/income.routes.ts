@@ -69,6 +69,20 @@ router.post(
       });
       res.status(201).json({ success: true, data: income });
     } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+// DELETE /api/incomes/:id - Delete an income
+router.delete(
+  "/:id",
+  requireRole("admin", "superadmin", "staff", "bendahara_pemasukan"),
+  async (req: Request, res: Response) => {
+    try {
+      const result = await incomeService.delete(req.params.id as string);
+      res.json({ success: true, data: result });
+    } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
     }
   }
