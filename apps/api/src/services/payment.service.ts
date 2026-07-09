@@ -391,6 +391,22 @@ export class PaymentService {
       // 3. Return balance if paymentMethod was balance
       // (Currently balance is saved as "transfer", manual refund may be required)
 
+      // 3.5. Revert "Titipan Saldo" if this transaction generated it
+      const relatedIncomes = await tx.query.incomes.findMany({
+        where: ilike(incomes.description, `%dari transaksi ${trx.transactionCode}%`)
+      });
+
+      for (const income of relatedIncomes) {
+        if (income.category === "Titipan Saldo") {
+          // Deduct student balance
+          await tx.update(students)
+            .set({ balance: sql`${students.balance} - ${income.amount}` })
+            .where(eq(students.id, trx.studentId));
+        }
+        // Delete the related income record
+        await tx.delete(incomes).where(eq(incomes.id, income.id));
+      }
+
       // 4. Delete transaction (transactionItems will cascade)
       await tx.delete(transactions).where(eq(transactions.id, transactionId));
 
