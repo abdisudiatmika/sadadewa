@@ -495,7 +495,7 @@ export default function BillingHistoryPage() {
                           >
                             <span className="material-symbols-outlined">print</span>
                           </button>
-                          {(user?.role === 'superadmin' || user?.role === 'admin') && !tx.isIncome && (
+                          {['superadmin', 'admin', 'staff', 'bendahara_pemasukan'].includes(user?.role) && !tx.isIncome && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleCancelTransaction(tx.id, tx.transactionCode); }}
                               className="p-2 hover:bg-error-container text-error rounded-lg transition-all active:scale-95 flex items-center justify-center relative z-10"
