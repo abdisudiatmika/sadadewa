@@ -61,7 +61,15 @@ export default function TopNav() {
         <div className="flex items-center gap-3 ml-2">
           <div className="text-right hidden md:block">
             <p className="font-label-md text-label-md text-on-surface m-0 leading-tight">{user?.name || 'User'}</p>
-            <p className="font-label-md text-label-md text-on-surface-variant m-0 leading-tight capitalize text-[11px]">{user?.role || 'staff'}</p>
+            <p className="font-label-md text-label-md text-on-surface-variant m-0 leading-tight uppercase text-[11px]">
+              {
+                user?.role === 'staff' ? 'Admin TU' :
+                user?.role === 'bendahara_pemasukan' ? 'Bendahara Pemasukan' :
+                user?.role === 'bendahara_pengeluaran' ? 'Bendahara Pengeluaran' :
+                user?.role === 'teacher' ? 'Wali Kelas' :
+                user?.role || 'Admin TU'
+              }
+            </p>
           </div>
           <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-sm cursor-pointer border border-outline-variant">
             {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
