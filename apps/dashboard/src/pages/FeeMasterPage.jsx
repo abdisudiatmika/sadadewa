@@ -110,7 +110,7 @@ export default function FeeMasterPage() {
         : { classId: selectedClassId || undefined };
         
       const res = await api.generateBillsFee(generatingFee.id, payload);
-      alert(`Berhasil menerbitkan ${res.data.generated} tagihan baru!`);
+      alert(`Berhasil menerbitkan ${res.generated} tagihan baru!`);
       setShowGenerateModal(false);
       fetchData();
     } catch (err) {
