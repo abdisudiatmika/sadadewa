@@ -7,6 +7,7 @@ import PublicUploadPage from './pages/PublicUploadPage';
 import POSPage from './pages/POSPage';
 import StudentDashboardPage from './pages/StudentDashboardPage';
 import StudentRecordsPage from './pages/StudentRecordsPage';
+import AlumniPage from './pages/AlumniPage';
 import BillingHistoryPage from './pages/BillingHistoryPage';
 import ExpensesPage from './pages/ExpensesPage';
 import ReportsPage from './pages/ReportsPage';
@@ -68,6 +69,7 @@ function AppRoutes() {
         <Route path="pos" element={<POSPage />} />
         <Route path="billing" element={<BillingHistoryPage />} />
         <Route path="students" element={<StudentRecordsPage />} />
+        <Route path="alumni" element={<AlumniPage />} />
         <Route path="expenses" element={<ExpensesPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="settings" element={<SettingsPage />} />

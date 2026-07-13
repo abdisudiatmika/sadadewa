@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { students, classes, grades, studentClasses, academicYears, user, incomes } from "../db/schema.js";
-import { eq, ilike, and, or, sql, count, inArray, desc } from "drizzle-orm";
+import { eq, ilike, and, or, sql, count, inArray, desc, ne } from "drizzle-orm";
 import { userService } from "./user.service.js";
 
 export class StudentService {
@@ -32,7 +32,14 @@ export class StudentService {
     }
 
     if (params.status) {
-      conditions.push(eq(students.status, params.status as any));
+      if (params.status === "active,inactive,suspended") {
+        conditions.push(inArray(students.status, ["active", "inactive", "suspended"]));
+      } else {
+        conditions.push(eq(students.status, params.status as any));
+      }
+    } else {
+      // Exclude graduated by default
+      conditions.push(ne(students.status, "graduated"));
     }
 
     if (params.classId) {
