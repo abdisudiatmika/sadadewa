@@ -220,7 +220,8 @@ export class FeeService {
 
     // Find targeted students based on grade filter or explicit class filter
     let studentConditions = [
-      eq(studentClasses.academicYearId, template.academicYearId)
+      eq(studentClasses.academicYearId, template.academicYearId),
+      eq(studentClasses.status, "active")
     ];
 
     if (target?.studentId) {
