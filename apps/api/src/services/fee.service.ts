@@ -8,7 +8,7 @@ import {
   studentClasses,
   classes,
 } from "../db/schema.js";
-import { eq, ilike, and, count, sql, or } from "drizzle-orm";
+import { eq, ilike, and, count, sql, or, ne } from "drizzle-orm";
 
 export class FeeService {
   /**
@@ -243,7 +243,8 @@ export class FeeService {
     const targetStudents = await db
       .select({ id: studentClasses.studentId })
       .from(studentClasses)
-      .where(and(...studentConditions));
+      .innerJoin(students, eq(studentClasses.studentId, students.id))
+      .where(and(...studentConditions, ne(students.status, "graduated")));
 
     if (targetStudents.length === 0) return { generated: 0 };
 
