@@ -14,6 +14,7 @@ import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import FeeMasterPage from './pages/FeeMasterPage';
 import MasterClassPage from './pages/MasterClassPage';
+import DiscountMasterPage from './pages/DiscountMasterPage';
 import ReceiptPage from './pages/ReceiptPage';
 import ReceiptIncomePage from './pages/ReceiptIncomePage';
 import PaymentProofsPage from './pages/PaymentProofsPage';
@@ -75,6 +76,7 @@ function AppRoutes() {
         <Route path="settings" element={<SettingsPage />} />
         <Route path="fees" element={<FeeMasterPage />} />
         <Route path="master-classes" element={<MasterClassPage />} />
+        <Route path="discounts" element={<DiscountMasterPage />} />
         <Route path="payment-proofs" element={<PaymentProofsPage />} />
         <Route path="users" element={<UserManagementPage />} />
         <Route

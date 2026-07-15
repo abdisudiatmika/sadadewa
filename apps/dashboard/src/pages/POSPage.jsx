@@ -21,6 +21,10 @@ export default function POSPage() {
   const [saveChangeAsBalance, setSaveChangeAsBalance] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [topArrears, setTopArrears] = useState([]);
+  
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountInfo, setDiscountInfo] = useState(null);
+  const [discountError, setDiscountError] = useState('');
   const searchRef = useRef(null);
 
   // Income Modal States
@@ -82,6 +86,9 @@ export default function POSPage() {
     setSelectedStudent(student);
     setSearchQuery('');
     setShowResults(false);
+    setDiscountCode('');
+    setDiscountInfo(null);
+    setDiscountError('');
   };
 
   const toggleCartItem = (item) => {
@@ -102,7 +109,32 @@ export default function POSPage() {
 
   const subtotal = cart.reduce((sum, item) => sum + Number(item.amountToPay || 0), 0);
   
-  const total = subtotal;
+  let discountAmount = 0;
+  if (discountInfo) {
+    if (discountInfo.type === 'percentage') {
+      discountAmount = Math.floor(subtotal * (discountInfo.value / 100));
+    } else {
+      discountAmount = Math.min(subtotal, discountInfo.value);
+    }
+  }
+  
+  const total = subtotal - discountAmount;
+
+  const handleValidateDiscount = async () => {
+    setDiscountError('');
+    setDiscountInfo(null);
+    if (!discountCode.trim()) return;
+    try {
+      const res = await api.validateDiscount(discountCode);
+      if (res.valid) {
+        setDiscountInfo(res.discount);
+      } else {
+        setDiscountError(res.error || 'Kode tidak valid');
+      }
+    } catch (err) {
+      setDiscountError(err.message || 'Gagal mengecek diskon');
+    }
+  };
 
   const totalOutstanding = billingItems
     .filter(b => b.status === 'overdue' || b.status === 'unpaid')
@@ -116,6 +148,7 @@ export default function POSPage() {
       const checkoutRes = await api.checkout({
         studentId: selectedStudent.id,
         payments: cart.map(c => ({ billingItemId: c.id, amount: Number(c.amountToPay) })),
+        discountCode: discountInfo ? discountInfo.code : undefined,
         amountReceived: numAmountReceived > 0 ? numAmountReceived : undefined,
         saveToBalance: saveChangeAsBalance,
         paymentMethod: useBalance ? 'balance' : checkoutPaymentMethod,
@@ -292,9 +325,54 @@ export default function POSPage() {
                         <p className="text-xs text-on-surface-variant m-0 truncate">{s.className}</p>
                       </div>
                     </div>
-                    <div className="mt-auto pt-2 border-t border-outline-variant/30 flex justify-between items-center">
-                      <span className="text-xs text-on-surface-variant">Tunggakan:</span>
-                      <span className="text-sm text-error font-bold">{formatRupiah(s.totalArrears)}</span>
+                    {/* Input Diskon */}
+                    <div className="pt-4 mt-4 border-t border-outline-variant">
+                      <label className="block font-label-md text-on-surface-variant mb-2">Kode Diskon / Beasiswa</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text"
+                          value={discountCode}
+                          onChange={(e) => setDiscountCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
+                          placeholder="Masukkan kode..."
+                          className="flex-1 px-4 py-2 bg-surface border border-outline rounded-lg focus:outline-none focus:border-primary font-mono uppercase"
+                          disabled={processing}
+                        />
+                        <button 
+                          onClick={handleValidateDiscount}
+                          disabled={!discountCode.trim() || processing}
+                          className="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label-md hover:bg-secondary-container/80 transition-colors disabled:opacity-50"
+                        >
+                          Cek
+                        </button>
+                      </div>
+                      {discountError && (
+                        <p className="text-error text-xs mt-1">{discountError}</p>
+                      )}
+                      {discountInfo && (
+                        <p className="text-primary text-xs mt-1">
+                          Kode diterapkan: {discountInfo.description} (-{discountInfo.type === 'percentage' ? `${discountInfo.value}%` : formatCurrency(discountInfo.value)})
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Ringkasan */}
+                    <div className="pt-4 mt-4 border-t border-outline-variant space-y-3">
+                      <div className="flex justify-between items-center text-on-surface-variant">
+                        <span>Subtotal</span>
+                        <span className="font-bold">{formatCurrency(subtotal)}</span>
+                      </div>
+                      
+                      {discountAmount > 0 && (
+                        <div className="flex justify-between items-center text-primary">
+                          <span>Potongan ({discountInfo?.code})</span>
+                          <span className="font-bold">-{formatCurrency(discountAmount)}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-center text-lg">
+                        <span className="font-bold">Total Tagihan</span>
+                        <span className="font-bold text-primary">{formatCurrency(total)}</span>
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -404,7 +482,6 @@ export default function POSPage() {
             ))
           )}
         </div>
-
         {/* Checkout Footer */}
         {cart.length > 0 && (
           <div className="p-container-padding bg-surface border-t border-surface-variant">
@@ -412,6 +489,41 @@ export default function POSPage() {
             <div className="flex justify-between mb-2">
               <span className="font-body-lg text-body-lg text-on-surface-variant">Subtotal ({cart.length} item)</span>
               <span className="font-tabular-nums text-tabular-nums text-on-background">{formatRupiah(subtotal)}</span>
+            </div>
+
+            <div className="flex justify-between items-center mt-2 mb-4 pt-2 border-t border-surface-variant">
+              <span className="font-headline-sm text-headline-sm text-on-background font-bold">Total Tagihan</span>
+              <span className="font-headline-sm text-headline-sm text-primary font-bold">{formatRupiah(total)}</span>
+            </div>
+
+            <div className="mb-4 pt-2 border-t border-outline-variant/30">
+              <label className="block text-xs font-medium text-on-surface-variant mb-1">Kode Diskon / Beasiswa (Opsional)</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
+                  placeholder="Masukkan kode..."
+                  className="flex-1 px-3 py-1.5 text-sm bg-surface border border-outline-variant rounded-md focus:outline-none focus:border-secondary font-mono uppercase"
+                  disabled={processing}
+                />
+                <button 
+                  onClick={handleValidateDiscount}
+                  disabled={!discountCode.trim() || processing}
+                  className="px-3 py-1.5 bg-secondary-container text-on-secondary-container rounded-md text-sm font-medium hover:bg-secondary-container/80 transition-colors disabled:opacity-50"
+                >
+                  Cek
+                </button>
+              </div>
+              {discountError && (
+                <p className="text-error text-xs mt-1">{discountError}</p>
+              )}
+              {discountInfo && (
+                <div className="mt-1 flex justify-between items-center text-xs">
+                  <span className="text-secondary font-medium">Potongan {discountInfo.code}:</span>
+                  <span className="text-secondary font-bold">-{formatRupiah(discountAmount)}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-between items-center mb-4">

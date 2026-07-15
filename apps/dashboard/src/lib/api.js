@@ -187,6 +187,27 @@ export const api = {
   generateBillsFee: (id, options = {}) =>
     request(`/api/fees/${id}/generate-bills`, { method: 'POST', body: JSON.stringify(options) }),
 
+  // ---- Discounts ----
+  getDiscounts: (params = {}) => {
+    const query = new URLSearchParams();
+    if (params.page) query.set('page', params.page);
+    if (params.perPage) query.set('perPage', params.perPage);
+    if (params.search) query.set('search', params.search);
+    return request(`/api/discounts?${query.toString()}`);
+  },
+
+  createDiscount: (data) =>
+    request('/api/discounts', { method: 'POST', body: JSON.stringify(data) }),
+
+  updateDiscount: (id, data) =>
+    request(`/api/discounts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  deleteDiscount: (id) =>
+    request(`/api/discounts/${id}`, { method: 'DELETE' }),
+
+  validateDiscount: (code) =>
+    request('/api/payments/validate-discount', { method: 'POST', body: JSON.stringify({ code }) }),
+
   // ---- Payments ----
   checkout: (data) =>
     request('/api/payments/checkout', { method: 'POST', body: JSON.stringify(data) }),

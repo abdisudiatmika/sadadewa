@@ -43,6 +43,27 @@ export class ReportService {
           : eq(billingItems.status, "paid")
       );
 
+    // Get total discounts applied to these transactions
+    let discountWhere = undefined;
+    if (filters?.academicYearId) {
+      discountWhere = inArray(
+        transactions.id,
+        db.select({ id: transactionItems.transactionId })
+          .from(transactionItems)
+          .innerJoin(billingItems, eq(transactionItems.billingItemId, billingItems.id))
+          .where(eq(billingItems.academicYearId, filters.academicYearId))
+      );
+    }
+
+    const [discountResult] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${transactions.discountAmount}), 0)`,
+      })
+      .from(transactions)
+      .where(discountWhere);
+
+    const actualRevenue = (revenueResult?.total || 0) - (discountResult?.total || 0);
+
     // Total outstanding (sum of overdue + unpaid billing items)
     const [outstandingResult] = await db
       .select({
@@ -69,7 +90,7 @@ export class ReportService {
         : 0;
 
     return {
-      totalRevenue: revenueResult?.total || 0,
+      totalRevenue: actualRevenue > 0 ? actualRevenue : 0,
       collectionRate,
       totalOutstanding: outstandingResult?.total || 0,
       revenueChangePercent: 12.5, // Placeholder - would compute vs prior period
@@ -235,11 +256,25 @@ export class ReportService {
         )
       );
 
+    const [monthlyDiscounts] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${transactions.discountAmount}), 0)`,
+      })
+      .from(transactions)
+      .where(
+        and(
+          sql`EXTRACT(MONTH FROM ${transactions.createdAt}) = ${new Date().getMonth() + 1}`,
+          sql`EXTRACT(YEAR FROM ${transactions.createdAt}) = ${new Date().getFullYear()}`
+        )
+      );
+
+    const actualMonthlyRevenue = (monthlyRevenue?.total || 0) - (monthlyDiscounts?.total || 0);
+
     return {
       totalActiveStudents: activeStudents?.count || 0,
       totalArrears: totalArrears?.total || 0,
       unpaidThisMonth: unpaidThisMonth?.count || 0,
-      monthlyRevenue: monthlyRevenue?.total || 0,
+      monthlyRevenue: actualMonthlyRevenue > 0 ? actualMonthlyRevenue : 0,
     };
   }
 
