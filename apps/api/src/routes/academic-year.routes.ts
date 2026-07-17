@@ -44,7 +44,7 @@ const updateSchema = z.object({
 
 router.put("/:id", validate({ body: updateSchema }), async (req: Request, res: Response) => {
   try {
-    const year = await academicYearService.update(req.params.id, req.body);
+    const year = await academicYearService.update(req.params.id as string, req.body);
     if (!year) {
       res.status(404).json({ success: false, error: "Academic year not found" });
       return;
@@ -57,7 +57,7 @@ router.put("/:id", validate({ body: updateSchema }), async (req: Request, res: R
 
 router.put("/:id/activate", async (req: Request, res: Response) => {
   try {
-    const year = await academicYearService.setActive(req.params.id);
+    const year = await academicYearService.setActive(req.params.id as string);
     if (!year) {
       res.status(404).json({ success: false, error: "Academic year not found" });
       return;
@@ -70,7 +70,7 @@ router.put("/:id/activate", async (req: Request, res: Response) => {
 
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    const year = await academicYearService.delete(req.params.id);
+    const year = await academicYearService.delete(req.params.id as string);
     if (!year) {
       res.status(404).json({ success: false, error: "Academic year not found" });
       return;

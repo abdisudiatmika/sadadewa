@@ -39,7 +39,7 @@ router.post("/grades", requireRole("admin", "superadmin", "staff"), validate({ b
 
 router.put("/grades/:id", requireRole("admin", "superadmin", "staff"), async (req: Request, res: Response) => {
   try {
-    const grade = await masterService.updateGrade(req.params.id, req.body);
+    const grade = await masterService.updateGrade(req.params.id as string, req.body);
     if (!grade) {
       res.status(404).json({ success: false, error: "Grade not found" });
       return;
@@ -52,7 +52,7 @@ router.put("/grades/:id", requireRole("admin", "superadmin", "staff"), async (re
 
 router.delete("/grades/:id", requireRole("admin", "superadmin", "staff"), async (req: Request, res: Response) => {
   try {
-    const grade = await masterService.deleteGrade(req.params.id);
+    const grade = await masterService.deleteGrade(req.params.id as string);
     if (!grade) {
       res.status(404).json({ success: false, error: "Grade not found" });
       return;
@@ -103,7 +103,7 @@ router.post("/classes", requireRole("admin", "superadmin", "staff"), validate({ 
 
 router.put("/classes/:id", requireRole("admin", "superadmin", "staff"), async (req: Request, res: Response) => {
   try {
-    const updatedClass = await masterService.updateClass(req.params.id, req.body);
+    const updatedClass = await masterService.updateClass(req.params.id as string, req.body);
     if (!updatedClass) {
       res.status(404).json({ success: false, error: "Class not found" });
       return;
@@ -116,7 +116,7 @@ router.put("/classes/:id", requireRole("admin", "superadmin", "staff"), async (r
 
 router.delete("/classes/:id", requireRole("admin", "superadmin", "staff"), async (req: Request, res: Response) => {
   try {
-    const deletedClass = await masterService.deleteClass(req.params.id);
+    const deletedClass = await masterService.deleteClass(req.params.id as string);
     if (!deletedClass) {
       res.status(404).json({ success: false, error: "Class not found" });
       return;

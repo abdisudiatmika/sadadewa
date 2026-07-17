@@ -34,7 +34,7 @@ router.post("/", async (req: Request, res: Response) => {
 
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    await expenseService.deleteExpense(req.params.id);
+    await expenseService.deleteExpense(req.params.id as string);
     res.json({ success: true });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });

@@ -149,7 +149,7 @@ router.get("/delinquency/detailed", async (req: Request, res: Response) => {
 // GET /api/reports/student/ledger/:studentId
 router.get("/student/ledger/:studentId", async (req: Request, res: Response) => {
   try {
-    const data = await reportService.getStudentLedger(req.params.studentId);
+    const data = await reportService.getStudentLedger(req.params.studentId as string);
     res.json({ success: true, data });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
@@ -159,7 +159,7 @@ router.get("/student/ledger/:studentId", async (req: Request, res: Response) => 
 // GET /api/reports/class/summary/:classId
 router.get("/class/summary/:classId", async (req: Request, res: Response) => {
   try {
-    const data = await reportService.getClassSummary(req.params.classId);
+    const data = await reportService.getClassSummary(req.params.classId as string);
     res.json({ success: true, data });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

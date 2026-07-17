@@ -21,7 +21,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.get("/:id", async (req: Request, res: Response) => {
   try {
-    const result = await discountService.get(req.params.id);
+    const result = await discountService.get(req.params.id as string);
     res.json({ success: true, data: result });
   } catch (error: any) {
     res.status(404).json({ success: false, error: error.message });
@@ -39,7 +39,7 @@ router.post("/", async (req: Request, res: Response) => {
 
 router.put("/:id", async (req: Request, res: Response) => {
   try {
-    const result = await discountService.update(req.params.id, req.body);
+    const result = await discountService.update(req.params.id as string, req.body);
     res.json({ success: true, data: result });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });
@@ -48,7 +48,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    const result = await discountService.delete(req.params.id);
+    const result = await discountService.delete(req.params.id as string);
     res.json({ success: true, data: result });
   } catch (error: any) {
     res.status(400).json({ success: false, error: error.message });

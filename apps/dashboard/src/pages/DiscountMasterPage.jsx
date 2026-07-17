@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
-import { formatCurrency } from '../lib/utils';
-import Skeleton from '../components/ui/Skeleton';
+const formatCurrency = (val) => `Rp ${Number(val || 0).toLocaleString('id-ID')}`;
 
 export default function DiscountMasterPage() {
   const [discounts, setDiscounts] = useState([]);
@@ -154,12 +153,12 @@ export default function DiscountMasterPage() {
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
                   <tr key={i}>
-                    <td className="py-4 px-6"><Skeleton className="h-6 w-24" /></td>
-                    <td className="py-4 px-6"><Skeleton className="h-6 w-32" /></td>
-                    <td className="py-4 px-6"><Skeleton className="h-6 w-16" /></td>
-                    <td className="py-4 px-6"><Skeleton className="h-6 w-40" /></td>
-                    <td className="py-4 px-6"><Skeleton className="h-8 w-20 rounded-full" /></td>
-                    <td className="py-4 px-6 text-right"><Skeleton className="h-8 w-8 ml-auto rounded-full" /></td>
+                    <td className="py-4 px-6"><div className="h-6 w-24 bg-surface-container-high rounded animate-pulse" /></td>
+                    <td className="py-4 px-6"><div className="h-6 w-32 bg-surface-container-high rounded animate-pulse" /></td>
+                    <td className="py-4 px-6"><div className="h-6 w-16 bg-surface-container-high rounded animate-pulse" /></td>
+                    <td className="py-4 px-6"><div className="h-6 w-40 bg-surface-container-high rounded animate-pulse" /></td>
+                    <td className="py-4 px-6"><div className="h-8 w-20 bg-surface-container-high rounded-full animate-pulse" /></td>
+                    <td className="py-4 px-6 text-right"><div className="h-8 w-8 ml-auto bg-surface-container-high rounded-full animate-pulse" /></td>
                   </tr>
                 ))
               ) : discounts.length === 0 ? (
