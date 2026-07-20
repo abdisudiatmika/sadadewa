@@ -363,60 +363,6 @@ export default function POSPage() {
                         <p className="text-xs text-on-surface-variant m-0 truncate">{s.className}</p>
                       </div>
                     </div>
-                    {/* Input Diskon */}
-                    <div className="pt-4 mt-4 border-t border-outline-variant">
-                      <label className="block font-label-md text-on-surface-variant mb-2">Kode Diskon / Beasiswa</label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="text"
-                          value={discountCode}
-                          onChange={(e) => setDiscountCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
-                          placeholder="Masukkan kode..."
-                          className="flex-1 px-4 py-2 bg-surface border border-outline rounded-lg focus:outline-none focus:border-primary font-mono uppercase"
-                          disabled={processing}
-                        />
-                        <button 
-                          onClick={handleValidateDiscount}
-                          disabled={!discountCode.trim() || processing}
-                          className="px-4 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-label-md hover:bg-secondary-container/80 transition-colors disabled:opacity-50"
-                        >
-                          Cek
-                        </button>
-                      </div>
-                      {discountError && (
-                        <p className="text-error text-xs mt-1">{discountError}</p>
-                      )}
-                      {discountInfo && (
-                        <div className="flex items-center justify-between gap-2 bg-primary-container/30 p-2 rounded-lg mt-2">
-                          <p className="text-primary text-xs">
-                            Kode diterapkan: {discountInfo.description} (-{discountInfo.type === 'percentage' ? `${discountInfo.value}%` : formatRupiah(discountInfo.value)})
-                          </p>
-                          <button onClick={() => setDiscountInfo(null)} className="text-error hover:text-error/80">
-                            <span className="material-symbols-outlined text-[18px]">close</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Ringkasan */}
-                    <div className="pt-4 mt-4 border-t border-outline-variant space-y-2">
-                      <div className="flex justify-between text-on-surface-variant font-body-md">
-                        <span>Subtotal</span>
-                        <span className="font-bold">{formatRupiah(subtotal)}</span>
-                      </div>
-                      
-                      {discountAmount > 0 && (
-                        <div className="flex justify-between items-center text-primary">
-                          <span>Potongan ({discountInfo?.code})</span>
-                          <span className="font-bold">-{formatRupiah(discountAmount)}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex justify-between items-center text-lg">
-                        <span className="font-bold">Total Tagihan</span>
-                        <span className="font-bold text-primary">{formatRupiah(total)}</span>
-                      </div>
-                    </div>
                   </button>
                 ))}
               </div>
