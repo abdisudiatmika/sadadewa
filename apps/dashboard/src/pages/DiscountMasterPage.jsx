@@ -143,8 +143,6 @@ export default function DiscountMasterPage() {
               <tr className="bg-surface-container-low border-b border-outline-variant">
                 <th className="py-4 px-6 font-label-md text-on-surface-variant font-bold">Kode</th>
                 <th className="py-4 px-6 font-label-md text-on-surface-variant font-bold">Potongan</th>
-                <th className="py-4 px-6 font-label-md text-on-surface-variant font-bold">Terpakai</th>
-                <th className="py-4 px-6 font-label-md text-on-surface-variant font-bold">Masa Berlaku</th>
                 <th className="py-4 px-6 font-label-md text-on-surface-variant font-bold">Status</th>
                 <th className="py-4 px-6 font-label-md text-on-surface-variant font-bold text-right">Aksi</th>
               </tr>
@@ -155,8 +153,6 @@ export default function DiscountMasterPage() {
                   <tr key={i}>
                     <td className="py-4 px-6"><div className="h-6 w-24 bg-surface-container-high rounded animate-pulse" /></td>
                     <td className="py-4 px-6"><div className="h-6 w-32 bg-surface-container-high rounded animate-pulse" /></td>
-                    <td className="py-4 px-6"><div className="h-6 w-16 bg-surface-container-high rounded animate-pulse" /></td>
-                    <td className="py-4 px-6"><div className="h-6 w-40 bg-surface-container-high rounded animate-pulse" /></td>
                     <td className="py-4 px-6"><div className="h-8 w-20 bg-surface-container-high rounded-full animate-pulse" /></td>
                     <td className="py-4 px-6 text-right"><div className="h-8 w-8 ml-auto bg-surface-container-high rounded-full animate-pulse" /></td>
                   </tr>
@@ -178,19 +174,6 @@ export default function DiscountMasterPage() {
                     </td>
                     <td className="py-4 px-6 font-bold">
                       {d.type === 'percentage' ? `${d.value}%` : formatCurrency(d.value)}
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="text-sm">
-                        <span className="font-bold">{d.usedCount}</span>
-                        {d.maxUses ? ` / ${d.maxUses}` : ' (Tanpa batas)'}
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="text-sm">
-                        {d.validFrom ? new Date(d.validFrom).toLocaleDateString('id-ID') : 'Selamanya'} 
-                        {' - '} 
-                        {d.validUntil ? new Date(d.validUntil).toLocaleDateString('id-ID') : 'Selamanya'}
-                      </div>
                     </td>
                     <td className="py-4 px-6">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -284,40 +267,7 @@ export default function DiscountMasterPage() {
                 className="mt-1 w-full px-4 py-2 bg-surface-container-lowest border border-outline rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="font-label-md text-on-surface-variant">Batas Penggunaan (Opsional)</label>
-            <input
-              type="number"
-              min="1"
-              placeholder="Kosongkan jika tanpa batas (Unlimited)"
-              value={form.maxUses}
-              onChange={e => setForm({...form, maxUses: e.target.value})}
-              className="mt-1 w-full px-4 py-2 bg-surface-container-lowest border border-outline rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="font-label-md text-on-surface-variant">Berlaku Mulai (Opsional)</label>
-              <input
-                type="date"
-                value={form.validFrom}
-                onChange={e => setForm({...form, validFrom: e.target.value})}
-                className="mt-1 w-full px-4 py-2 bg-surface-container-lowest border border-outline rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-              />
             </div>
-            <div>
-              <label className="font-label-md text-on-surface-variant">Berlaku Sampai (Opsional)</label>
-              <input
-                type="date"
-                value={form.validUntil}
-                onChange={e => setForm({...form, validUntil: e.target.value})}
-                className="mt-1 w-full px-4 py-2 bg-surface-container-lowest border border-outline rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-            </div>
-          </div>
 
           <div className="flex items-center gap-2 pt-2">
             <input
