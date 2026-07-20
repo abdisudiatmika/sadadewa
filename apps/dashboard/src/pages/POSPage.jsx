@@ -91,6 +91,17 @@ export default function POSPage() {
     setDiscountCode('');
     setDiscountInfo(null);
     setDiscountError('');
+    setTopArrears([]);
+  };
+
+  const clearStudent = () => {
+    setSelectedStudent(null);
+    setBillingItems([]);
+    setCart([]);
+    // Reload top arrears when going back
+    api.getTopArrears(15)
+      .then(res => setTopArrears(res.data || []))
+      .catch(console.error);
   };
 
   const toggleCartItem = (item) => {
@@ -297,8 +308,8 @@ export default function POSPage() {
             )}
           </div>
 
-          {/* Student Snapshot */}
-          {selectedStudent ? (
+          {/* Student Snapshot - only when student is selected */}
+          {selectedStudent && (
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -313,7 +324,7 @@ export default function POSPage() {
                   </div>
                 </div>
                 <button 
-                  onClick={() => { setSelectedStudent(null); setBillingItems([]); setCart([]); }}
+                  onClick={clearStudent}
                   className="text-xs font-semibold text-on-surface-variant bg-surface border border-outline-variant px-3 py-1.5 rounded-lg hover:bg-surface-container transition-colors flex items-center gap-1 shrink-0 ml-4"
                 >
                   <span className="material-symbols-outlined text-[14px]">swap_horiz</span> Ganti Siswa
@@ -349,7 +360,10 @@ export default function POSPage() {
                 </div>
               </div>
             </div>
-          ) : (
+          )}
+
+          {/* Top 15 Penunggak - only when NO student is selected */}
+          {!selectedStudent && topArrears.length > 0 && (
             <div className="mt-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-on-surface m-0">Top 15 Penunggak Terbesar</h3>
