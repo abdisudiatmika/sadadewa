@@ -139,10 +139,11 @@ export default function POSPage() {
     if (!discountCode.trim()) return;
     try {
       const res = await api.validateDiscount(discountCode);
-      if (res.valid) {
-        setDiscountInfo(res.discount);
+      const result = res.data || res;
+      if (result.valid) {
+        setDiscountInfo(result.discount);
       } else {
-        setDiscountError(res.error || 'Kode tidak valid');
+        setDiscountError(result.error || 'Kode tidak valid');
       }
     } catch (err) {
       setDiscountError(err.message || 'Gagal mengecek diskon');
