@@ -117,13 +117,15 @@ export class StudentService {
       ))
       .leftJoin(classes, eq(studentClasses.classId, classes.id))
       .leftJoin(grades, eq(classes.gradeId, grades.id))
-      .where(eq(students.id, id));
+      .where(eq(students.id, id))
+      .limit(1);
 
     if (!result || result.length === 0) return null;
     const row = result[0];
     return {
       ...row.students,
-      class: row.classes ? { ...row.classes, grade: row.grades } : null
+      class: row.classes,
+      grade: row.grades,
     };
   }
 

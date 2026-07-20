@@ -299,26 +299,36 @@ export default function POSPage() {
 
           {/* Student Snapshot */}
           {selectedStudent ? (
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant text-headline-md font-bold">
-                  {selectedStudent.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-bold text-lg shrink-0">
+                    {selectedStudent.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-lg font-bold text-on-background m-0 truncate" title={selectedStudent.fullName}>{selectedStudent.fullName}</h2>
+                    <p className="text-sm text-on-surface-variant m-0 truncate">
+                      {selectedStudent.grade?.name || ''} {selectedStudent.class?.name || ''} • NISN: {selectedStudent.nisn}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-headline-md text-headline-md text-on-background m-0">{selectedStudent.fullName}</h2>
-                  <p className="font-body-md text-body-md text-on-surface-variant m-0 mt-1">
-                    {selectedStudent.grade?.name || ''} {selectedStudent.class?.name || ''} • NISN: {selectedStudent.nisn}
-                  </p>
-                </div>
+                <button 
+                  onClick={() => { setSelectedStudent(null); setBillingItems([]); setCart([]); }}
+                  className="text-xs font-semibold text-on-surface-variant bg-surface border border-outline-variant px-3 py-1.5 rounded-lg hover:bg-surface-container transition-colors flex items-center gap-1 shrink-0 ml-4"
+                >
+                  <span className="material-symbols-outlined text-[14px]">swap_horiz</span> Ganti Siswa
+                </button>
               </div>
-              <div className="text-right flex gap-6">
-                <div className="flex flex-col items-end">
-                  <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider m-0 mb-1">Saldo Siswa</p>
-                  <p className="font-headline-sm text-headline-sm text-primary font-bold font-tabular-nums m-0 mb-2">{formatRupiah(selectedStudent.balance || 0)}</p>
-                  <div className="flex gap-2">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2 bg-primary-container/30 border border-primary/10 rounded-lg px-4 py-2">
+                  <div>
+                    <p className="text-[10px] text-on-surface-variant uppercase tracking-wider m-0 font-semibold">Saldo Siswa</p>
+                    <p className="text-base text-primary font-bold font-tabular-nums m-0">{formatRupiah(selectedStudent.balance || 0)}</p>
+                  </div>
+                  <div className="flex gap-1 ml-2">
                     <button 
                       onClick={() => setShowTopUpModal(true)}
-                      className="text-xs font-semibold bg-primary-container text-on-primary-container px-2 py-1 rounded-md border border-primary/20 hover:bg-primary hover:text-white transition-colors flex items-center gap-1"
+                      className="text-xs font-semibold bg-primary text-on-primary px-2 py-1 rounded-md hover:opacity-90 transition-colors flex items-center gap-0.5"
                     >
                       <span className="material-symbols-outlined text-[14px]">add</span> Top Up
                     </button>
@@ -327,15 +337,15 @@ export default function POSPage() {
                         setEditSaldoAmount(selectedStudent.balance || 0);
                         setShowEditSaldoModal(true);
                       }}
-                      className="text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant px-2 py-1 rounded-md hover:bg-surface-container transition-colors flex items-center gap-1"
+                      className="text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant px-2 py-1 rounded-md hover:bg-surface-container transition-colors flex items-center gap-0.5"
                     >
-                      <span className="material-symbols-outlined text-[14px]">edit</span> Edit
+                      <span className="material-symbols-outlined text-[14px]">edit</span>
                     </button>
                   </div>
                 </div>
-                <div>
-                  <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider m-0 mb-1">Total Tunggakan</p>
-                  <p className="font-headline-sm text-headline-sm text-error font-bold font-tabular-nums m-0">{formatRupiah(totalOutstanding)}</p>
+                <div className="bg-error-container/30 border border-error/10 rounded-lg px-4 py-2">
+                  <p className="text-[10px] text-on-surface-variant uppercase tracking-wider m-0 font-semibold">Total Tunggakan</p>
+                  <p className="text-base text-error font-bold font-tabular-nums m-0">{formatRupiah(totalOutstanding)}</p>
                 </div>
               </div>
             </div>
