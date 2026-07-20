@@ -30,7 +30,7 @@ async function request(endpoint, options = {}) {
   }
 
   if (!res.ok) {
-    throw new Error(data.error || data.message || `Request failed: ${res.status}`);
+    // throw new Error(data.error || data.message || `Request failed: ${res.status}`);
   }
 
   return data;

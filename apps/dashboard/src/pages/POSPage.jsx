@@ -387,29 +387,34 @@ export default function POSPage() {
                         <p className="text-error text-xs mt-1">{discountError}</p>
                       )}
                       {discountInfo && (
-                        <p className="text-primary text-xs mt-1">
-                          Kode diterapkan: {discountInfo.description} (-{discountInfo.type === 'percentage' ? `${discountInfo.value}%` : formatCurrency(discountInfo.value)})
-                        </p>
+                        <div className="flex items-center justify-between gap-2 bg-primary-container/30 p-2 rounded-lg mt-2">
+                          <p className="text-primary text-xs">
+                            Kode diterapkan: {discountInfo.description} (-{discountInfo.type === 'percentage' ? `${discountInfo.value}%` : formatRupiah(discountInfo.value)})
+                          </p>
+                          <button onClick={() => setDiscountInfo(null)} className="text-error hover:text-error/80">
+                            <span className="material-symbols-outlined text-[18px]">close</span>
+                          </button>
+                        </div>
                       )}
                     </div>
 
                     {/* Ringkasan */}
-                    <div className="pt-4 mt-4 border-t border-outline-variant space-y-3">
-                      <div className="flex justify-between items-center text-on-surface-variant">
+                    <div className="pt-4 mt-4 border-t border-outline-variant space-y-2">
+                      <div className="flex justify-between text-on-surface-variant font-body-md">
                         <span>Subtotal</span>
-                        <span className="font-bold">{formatCurrency(subtotal)}</span>
+                        <span className="font-bold">{formatRupiah(subtotal)}</span>
                       </div>
                       
                       {discountAmount > 0 && (
                         <div className="flex justify-between items-center text-primary">
                           <span>Potongan ({discountInfo?.code})</span>
-                          <span className="font-bold">-{formatCurrency(discountAmount)}</span>
+                          <span className="font-bold">-{formatRupiah(discountAmount)}</span>
                         </div>
                       )}
                       
                       <div className="flex justify-between items-center text-lg">
                         <span className="font-bold">Total Tagihan</span>
-                        <span className="font-bold text-primary">{formatCurrency(total)}</span>
+                        <span className="font-bold text-primary">{formatRupiah(total)}</span>
                       </div>
                     </div>
                   </button>
