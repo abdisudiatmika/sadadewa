@@ -154,7 +154,7 @@ router.get("/:id/incomes", async (req: Request, res: Response) => {
     }
 
     const data = await db.query.incomes.findMany({
-      where: ilike(incomes.source, `%${student.fullName}%`),
+      where: eq(incomes.source, student.fullName),
       orderBy: (inc, { desc }) => [desc(inc.date)],
     });
 
