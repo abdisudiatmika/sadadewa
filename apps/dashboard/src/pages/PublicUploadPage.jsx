@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import imageCompression from 'browser-image-compression';
 
 export default function PublicUploadPage() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ export default function PublicUploadPage() {
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,9 +30,36 @@ export default function PublicUploadPage() {
     return Number(val).toLocaleString('id-ID');
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const originalFile = e.target.files[0];
+      
+      if (!originalFile.type.startsWith('image/')) {
+        setError('Hanya file gambar yang diperbolehkan.');
+        return;
+      }
+
+      try {
+        setCompressing(true);
+        const options = {
+          maxSizeMB: 0.5, // 500KB
+          maxWidthOrHeight: 1280,
+          useWebWorker: true,
+        };
+        const compressedFile = await imageCompression(originalFile, options);
+        
+        // Buat instance File baru agar namanya tetap sama
+        const newFile = new File([compressedFile], originalFile.name, {
+          type: compressedFile.type,
+        });
+        
+        setFile(newFile);
+      } catch (err) {
+        console.error("Error compressing image:", err);
+        setFile(originalFile);
+      } finally {
+        setCompressing(false);
+      }
     }
   };
 
@@ -223,10 +252,15 @@ export default function PublicUploadPage() {
 
           <button 
             type="submit" 
-            disabled={loading}
+            disabled={loading || compressing}
             className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {loading ? (
+            {compressing ? (
+              <>
+                <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                Menyiapkan Foto...
+              </>
+            ) : loading ? (
               <>
                 <span className="material-symbols-outlined animate-spin">progress_activity</span>
                 Mengunggah...
