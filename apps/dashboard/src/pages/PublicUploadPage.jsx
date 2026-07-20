@@ -18,6 +18,16 @@ export default function PublicUploadPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleAmountChange = (e) => {
+    const rawValue = e.target.value.replace(/\D/g, '');
+    setFormData({ ...formData, amount: rawValue });
+  };
+
+  const formatRupiahString = (val) => {
+    if (!val) return '';
+    return Number(val).toLocaleString('id-ID');
+  };
+
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
@@ -136,14 +146,13 @@ export default function PublicUploadPage() {
           <div>
             <label className="block text-sm font-medium text-on-surface mb-1">Nominal Transfer (Rp) <span className="text-error">*</span></label>
             <input 
-              type="number" 
+              type="text" 
               name="amount"
               required
-              min="1000"
-              value={formData.amount}
-              onChange={handleChange}
+              value={formatRupiahString(formData.amount)}
+              onChange={handleAmountChange}
               className="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:outline-none focus:border-secondary transition-colors"
-              placeholder="Contoh: 150000"
+              placeholder="Contoh: 150.000"
             />
           </div>
 
