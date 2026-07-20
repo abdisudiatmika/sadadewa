@@ -352,13 +352,13 @@ export default function POSPage() {
                     onClick={() => {
                       api.getStudent(s.studentId).then(res => selectStudent(res.data)).catch(console.error);
                     }}
-                    className="flex flex-col p-4 bg-surface border border-outline-variant rounded-xl hover:bg-surface-container hover:border-error/50 transition-all text-left group shadow-sm"
+                    className="flex flex-col p-4 bg-surface border border-outline-variant rounded-xl hover:bg-surface-container hover:border-error/50 transition-all text-left group shadow-sm min-w-0 w-full"
                   >
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-3 w-full">
                       <div className="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-on-error-container font-bold text-sm shrink-0 group-hover:scale-110 transition-transform">
                         {s.initials}
                       </div>
-                      <div className="overflow-hidden">
+                      <div className="overflow-hidden flex-1 min-w-0">
                         <p className="text-sm text-on-surface font-semibold m-0 truncate">{s.studentName}</p>
                         <p className="text-xs text-on-surface-variant m-0 truncate">{s.className}</p>
                       </div>
