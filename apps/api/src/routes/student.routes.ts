@@ -184,6 +184,28 @@ router.post(
   }
 );
 
+const updateBalanceSchema = z.object({
+  balance: z.number().min(0),
+});
+
+// PUT /api/students/:id/balance - Edit student balance directly
+router.put(
+  "/:id/balance",
+  requireAuth,
+  requireRole("admin", "superadmin", "staff", "bendahara_pemasukan"),
+  validate({ body: updateBalanceSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const studentId = req.params.id as string;
+      const { balance } = req.body;
+      const student = await studentService.updateBalance(studentId, balance);
+      res.json({ success: true, data: student });
+    } catch (error: any) {
+      res.status(400).json({ success: false, error: error.message });
+    }
+  }
+);
+
 // POST /api/students - Create a new student
 const createStudentSchema = z.object({
   studentCode: z.string().max(20).optional().or(z.literal("")),

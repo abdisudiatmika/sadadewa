@@ -141,6 +141,9 @@ export const api = {
   topUpStudentBalance: (id, data) =>
     request(`/api/students/${id}/topup`, { method: 'POST', body: JSON.stringify(data) }),
 
+  updateStudentBalance: (id, balance) =>
+    request(`/api/students/${id}/balance`, { method: 'PUT', body: JSON.stringify({ balance }) }),
+
   getStudentIncomes: (id) => request(`/api/students/${id}/incomes`),
 
   bulkUploadArrears: (records) => request('/api/billing/bulk-arrears', { method: 'POST', body: JSON.stringify(records) }),

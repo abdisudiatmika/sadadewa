@@ -273,6 +273,23 @@ export class StudentService {
   }
 
   /**
+   * Update student balance directly (for corrections)
+   */
+  async updateBalance(id: string, newBalance: number) {
+    const [updated] = await db
+      .update(students)
+      .set({ balance: newBalance, updatedAt: new Date() })
+      .where(eq(students.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new Error("Student not found");
+    }
+
+    return updated;
+  }
+
+  /**
    * Update an existing student.
    */
   async update(
