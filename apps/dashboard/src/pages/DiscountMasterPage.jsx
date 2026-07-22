@@ -256,16 +256,28 @@ export default function DiscountMasterPage() {
             </div>
             <div>
               <label className="font-label-md text-on-surface-variant">Nilai Potongan</label>
-              <input
-                type="number"
-                required
-                min="1"
-                {...(form.type === 'percentage' ? { max: 100 } : {})}
-                placeholder={form.type === 'percentage' ? '100' : '500000'}
-                value={form.value}
-                onChange={e => setForm({...form, value: e.target.value})}
-                className="mt-1 w-full px-4 py-2 bg-surface-container-lowest border border-outline rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-              />
+              {form.type === 'percentage' ? (
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  max="100"
+                  placeholder="100"
+                  value={form.value}
+                  onChange={e => setForm({...form, value: e.target.value})}
+                  className="mt-1 w-full px-4 py-2 bg-surface-container-lowest border border-outline rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              ) : (
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  placeholder="500000"
+                  value={form.value}
+                  onChange={e => setForm({...form, value: e.target.value})}
+                  className="mt-1 w-full px-4 py-2 bg-surface-container-lowest border border-outline rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              )}
             </div>
             </div>
 
