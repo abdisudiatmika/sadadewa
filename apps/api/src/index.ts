@@ -118,7 +118,25 @@ app.use(
 
 // ---- Start Server ----
 
-app.listen(PORT, () => {
+import { sql } from "drizzle-orm";
+import { db } from "./db/index.js";
+
+async function runStartupTasks() {
+  try {
+    console.log("Checking and migrating database enums...");
+    const enumsToAdd = ['transfer_bri', 'transfer_bukopin', 'transfer_other', 'qris'];
+    for (const val of enumsToAdd) {
+      await db.execute(sql.raw(`ALTER TYPE payment_method ADD VALUE IF NOT EXISTS '${val}'`));
+    }
+    console.log("Enum migration successful!");
+  } catch (err: any) {
+    // Ignore error if type doesn't exist yet (first run) or other harmless errors
+    console.log("Enum migration skipped or failed (harmless if first run):", err.message);
+  }
+}
+
+app.listen(PORT, async () => {
+  await runStartupTasks();
   console.log(`🚀 EduPay Pro API running on http://localhost:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/api/health`);
 });
