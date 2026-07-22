@@ -320,9 +320,21 @@ export class PaymentService {
       .from(incomes)
       .where(eq(incomes.description, `Simpan kembalian dari transaksi ${transaction.transactionCode}`));
 
+    let discountDescription = null;
+    if (transaction.discountCode) {
+      const [discount] = await db
+        .select({ description: discountCodes.description })
+        .from(discountCodes)
+        .where(eq(discountCodes.code, transaction.discountCode));
+      if (discount) {
+        discountDescription = discount.description;
+      }
+    }
+
     return {
       ...transaction,
-      savedToBalanceAmount: income ? income.amount : 0
+      savedToBalanceAmount: income ? income.amount : 0,
+      discountDescription
     };
   }
 

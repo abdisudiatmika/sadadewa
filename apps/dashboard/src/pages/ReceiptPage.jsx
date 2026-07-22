@@ -80,6 +80,11 @@ export default function ReceiptPage() {
     finalFeeStrings.push(`Titipan Saldo (Rp ${overpayment.toLocaleString('id-ID')})`);
   }
   
+  if (transaction.discountCode) {
+    const desc = transaction.discountDescription ? ` - ${transaction.discountDescription}` : '';
+    finalFeeStrings.push(`Diskon: ${transaction.discountCode}${desc} (-Rp ${transaction.discountAmount.toLocaleString('id-ID')})`);
+  }
+  
   const feeNames = finalFeeStrings.join(', ');
 
   // Fix for "Local time stored as UTC" bug: strip 'Z' to treat as local
