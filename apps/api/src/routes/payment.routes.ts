@@ -18,7 +18,7 @@ const checkoutSchema = z.object({
     amount: z.number().positive() // Jumlah yang dibayar kasir untuk item ini
   })).min(1),
   amountReceived: z.number().positive().optional(),
-  discountCode: z.string().optional(),
+  discountCodes: z.array(z.string()).optional(),
   paymentMethod: z.enum(["cash", "transfer", "transfer_bri", "transfer_bukopin", "transfer_other", "qris", "balance"]),
   notes: z.string().optional(),
   saveToBalance: z.boolean().optional(),

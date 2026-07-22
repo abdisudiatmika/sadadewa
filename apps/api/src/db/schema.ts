@@ -270,7 +270,7 @@ export const transactions = pgTable("transactions", {
     .notNull()
     .references(() => user.id, { onDelete: "restrict" }),
   subtotal: integer("subtotal").notNull(),
-  discountCode: varchar("discount_code", { length: 50 }),
+  discountCode: text("discount_code"),
   discountAmount: integer("discount_amount").notNull().default(0),
   lateFee: integer("late_fee").notNull().default(0),
   total: integer("total").notNull(),

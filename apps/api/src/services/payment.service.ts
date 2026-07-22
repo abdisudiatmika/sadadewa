@@ -18,7 +18,7 @@ export class PaymentService {
     studentId: string;
     payments: { billingItemId: string; amount: number }[];
     amountReceived?: number;
-    discountCode?: string;
+    discountCodes?: string[];
     paymentMethod: "cash" | "transfer" | "transfer_bri" | "transfer_bukopin" | "transfer_other" | "qris" | "balance";
     cashierId: string;
     notes?: string;
@@ -52,40 +52,49 @@ export class PaymentService {
       // 2. Calculate subtotal based on user's input
       const subtotal = params.payments.reduce((sum, p) => sum + p.amount, 0);
 
-      // 3. Apply discount if provided
+      // 3. Apply discounts if provided
       let discountAmount = 0;
-      if (params.discountCode) {
-        const [discount] = await tx
-          .select()
-          .from(discountCodes)
-          .where(
-            and(
-              eq(discountCodes.code, params.discountCode.toUpperCase()),
-              eq(discountCodes.isActive, true)
-            )
-          );
+      let appliedCodes: string[] = [];
+      
+      if (params.discountCodes && params.discountCodes.length > 0) {
+        for (const code of params.discountCodes) {
+          const [discount] = await tx
+            .select()
+            .from(discountCodes)
+            .where(
+              and(
+                eq(discountCodes.code, code.toUpperCase()),
+                eq(discountCodes.isActive, true)
+              )
+            );
 
-        if (!discount) {
-          throw new Error("Invalid or expired discount code");
+          if (!discount) {
+            throw new Error(`Invalid or inactive discount code: ${code}`);
+          }
+
+          if (discount.maxUses && discount.usedCount >= discount.maxUses) {
+            throw new Error(`Discount code has reached maximum uses: ${code}`);
+          }
+
+          if (discount.type === "percentage") {
+            discountAmount += Math.floor(subtotal * (discount.value / 100));
+          } else {
+            discountAmount += discount.value;
+          }
+
+          // Increment usage counter
+          await tx
+            .update(discountCodes)
+            .set({ usedCount: sql`${discountCodes.usedCount} + 1` })
+            .where(eq(discountCodes.id, discount.id));
+            
+          appliedCodes.push(discount.code);
         }
-
-        if (discount.maxUses && discount.usedCount >= discount.maxUses) {
-          throw new Error("Discount code has reached maximum uses");
+        
+        // Ensure discount amount doesn't exceed subtotal
+        if (discountAmount > subtotal) {
+            discountAmount = subtotal;
         }
-
-        const now = new Date();
-
-        if (discount.type === "percentage") {
-          discountAmount = Math.floor(subtotal * (discount.value / 100));
-        } else {
-          discountAmount = Math.min(discount.value, subtotal);
-        }
-
-        // Increment usage counter
-        await tx
-          .update(discountCodes)
-          .set({ usedCount: sql`${discountCodes.usedCount} + 1` })
-          .where(eq(discountCodes.id, discount.id));
       }
 
       // 4. Calculate late fees (HAPUS DENDA SESUAI PERMINTAAN)
@@ -151,7 +160,7 @@ export class PaymentService {
           studentId: params.studentId,
           cashierId: params.cashierId,
           subtotal,
-          discountCode: params.discountCode?.toUpperCase() || null,
+          discountCode: appliedCodes.length > 0 ? appliedCodes.join(', ') : null,
           discountAmount,
           lateFee,
           total,
@@ -322,12 +331,14 @@ export class PaymentService {
 
     let discountDescription = null;
     if (transaction.discountCode) {
-      const [discount] = await db
+      const codes = transaction.discountCode.split(',').map(c => c.trim());
+      const discounts = await db
         .select({ description: discountCodes.description })
         .from(discountCodes)
-        .where(eq(discountCodes.code, transaction.discountCode));
-      if (discount) {
-        discountDescription = discount.description;
+        .where(inArray(discountCodes.code, codes));
+        
+      if (discounts.length > 0) {
+        discountDescription = discounts.map(d => d.description).filter(Boolean).join(', ');
       }
     }
 

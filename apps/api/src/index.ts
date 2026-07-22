@@ -123,6 +123,13 @@ import { db } from "./db/index.js";
 
 async function runStartupTasks() {
   try {
+    console.log("Checking and migrating database schema...");
+    try {
+      await db.execute(sql.raw(`ALTER TABLE transactions ALTER COLUMN discount_code TYPE TEXT`));
+    } catch (e: any) {
+      console.log("Schema migration skipped (harmless if already applied):", e.message);
+    }
+    
     console.log("Checking and migrating database enums...");
     const enumsToAdd = ['transfer_bri', 'transfer_bukopin', 'transfer_other', 'qris'];
     for (const val of enumsToAdd) {

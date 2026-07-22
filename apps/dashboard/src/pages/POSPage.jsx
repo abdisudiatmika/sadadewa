@@ -23,7 +23,7 @@ export default function POSPage() {
   const [topArrears, setTopArrears] = useState([]);
   
   const [discountCode, setDiscountCode] = useState('');
-  const [discountInfo, setDiscountInfo] = useState(null);
+  const [appliedDiscounts, setAppliedDiscounts] = useState([]);
   const [discountError, setDiscountError] = useState('');
   const searchRef = useRef(null);
 
@@ -89,7 +89,7 @@ export default function POSPage() {
     setSearchQuery('');
     setShowResults(false);
     setDiscountCode('');
-    setDiscountInfo(null);
+    setAppliedDiscounts([]);
     setDiscountError('');
     setTopArrears([]);
   };
@@ -123,31 +123,45 @@ export default function POSPage() {
   const subtotal = cart.reduce((sum, item) => sum + Number(item.amountToPay || 0), 0);
   
   let discountAmount = 0;
-  if (discountInfo) {
+  appliedDiscounts.forEach(discountInfo => {
     if (discountInfo.type === 'percentage') {
-      discountAmount = Math.floor(subtotal * (discountInfo.value / 100));
+      discountAmount += Math.floor(subtotal * (discountInfo.value / 100));
     } else {
-      discountAmount = Math.min(subtotal, discountInfo.value);
+      discountAmount += discountInfo.value;
     }
+  });
+  if (discountAmount > subtotal) {
+    discountAmount = subtotal;
   }
   
   const total = subtotal - discountAmount;
 
   const handleValidateDiscount = async () => {
     setDiscountError('');
-    setDiscountInfo(null);
     if (!discountCode.trim()) return;
+    
+    // Check if already applied
+    if (appliedDiscounts.some(d => d.code === discountCode.trim().toUpperCase())) {
+      setDiscountError('Kode diskon sudah digunakan');
+      return;
+    }
+
     try {
       const res = await api.validateDiscount(discountCode);
       const result = res.data || res;
       if (result.valid) {
-        setDiscountInfo(result.discount);
+        setAppliedDiscounts([...appliedDiscounts, result.discount]);
+        setDiscountCode('');
       } else {
         setDiscountError(result.error || 'Kode tidak valid');
       }
     } catch (err) {
       setDiscountError(err.message || 'Gagal mengecek diskon');
     }
+  };
+
+  const handleRemoveDiscount = (code) => {
+    setAppliedDiscounts(appliedDiscounts.filter(d => d.code !== code));
   };
 
   const totalOutstanding = billingItems
@@ -162,7 +176,7 @@ export default function POSPage() {
       const checkoutRes = await api.checkout({
         studentId: selectedStudent.id,
         payments: cart.map(c => ({ billingItemId: c.id, amount: Number(c.amountToPay) })),
-        discountCode: discountInfo ? discountInfo.code : undefined,
+        discountCodes: appliedDiscounts.length > 0 ? appliedDiscounts.map(d => d.code) : undefined,
         amountReceived: numAmountReceived > 0 ? numAmountReceived : undefined,
         saveToBalance: saveChangeAsBalance,
         paymentMethod: useBalance ? 'balance' : checkoutPaymentMethod,
@@ -541,10 +555,28 @@ export default function POSPage() {
               {discountError && (
                 <p className="text-error text-xs mt-1">{discountError}</p>
               )}
-              {discountInfo && (
-                <div className="mt-1 flex justify-between items-center text-xs">
-                  <span className="text-secondary font-medium">Potongan {discountInfo.code}:</span>
-                  <span className="text-secondary font-bold">-{formatRupiah(discountAmount)}</span>
+              {appliedDiscounts.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {appliedDiscounts.map(d => (
+                    <div key={d.code} className="flex justify-between items-center text-xs bg-secondary-container/20 px-2 py-1.5 rounded">
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleRemoveDiscount(d.code)}
+                          className="text-error hover:bg-error/10 p-0.5 rounded-full flex items-center justify-center transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                        <span className="text-secondary font-medium">{d.code}</span>
+                      </div>
+                      <span className="text-secondary font-bold">
+                        -{d.type === 'percentage' ? `${d.value}%` : formatRupiah(d.value)}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between items-center text-xs pt-1 mt-1 border-t border-outline-variant/30 px-1">
+                    <span className="text-secondary font-medium">Total Potongan:</span>
+                    <span className="text-secondary font-bold">-{formatRupiah(discountAmount)}</span>
+                  </div>
                 </div>
               )}
             </div>
