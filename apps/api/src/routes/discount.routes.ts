@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = Router();
 
-router.use(requireAuth, requireRole("admin", "superadmin"));
+router.use(requireAuth, requireRole("admin", "superadmin", "bendahara_pemasukan", "staff"));
 
 router.get("/", async (req: Request, res: Response) => {
   try {

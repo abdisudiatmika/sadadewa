@@ -168,8 +168,17 @@ export default function POSPage() {
         paymentMethod: useBalance ? 'balance' : checkoutPaymentMethod,
       });
       
+      if (!checkoutRes.success && checkoutRes.error) {
+        throw new Error(checkoutRes.error);
+      }
+      
+      const transactionId = checkoutRes.data?.transactionId || checkoutRes.transactionId;
+      if (!transactionId) {
+        throw new Error("Transaction ID not received from server");
+      }
+
       // Open receipt in new tab
-      window.open(`/receipt/${checkoutRes.data.transactionId}`, '_blank');
+      window.open(`/receipt/${transactionId}`, '_blank');
       
       // Reload billing
       const res = await api.getStudentBilling(selectedStudent.id);
