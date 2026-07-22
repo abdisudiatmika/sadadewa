@@ -74,17 +74,6 @@ export class PaymentService {
         }
 
         const now = new Date();
-        if (discount.validFrom && new Date(discount.validFrom) > now) {
-          throw new Error("Discount code is not yet valid");
-        }
-        
-        if (discount.validUntil) {
-          const until = new Date(discount.validUntil);
-          until.setHours(23, 59, 59, 999);
-          if (until < now) {
-            throw new Error("Discount code has expired");
-          }
-        }
 
         if (discount.type === "percentage") {
           discountAmount = Math.floor(subtotal * (discount.value / 100));
@@ -359,18 +348,8 @@ export class PaymentService {
       return { valid: false, error: "Discount code has reached maximum uses" };
     }
 
-    const now = new Date();
-    if (discount.validFrom && new Date(discount.validFrom) > now) {
-      return { valid: false, error: "Discount code is not yet valid" };
-    }
-    
-    if (discount.validUntil) {
-      const until = new Date(discount.validUntil);
-      until.setHours(23, 59, 59, 999);
-      if (until < now) {
-        return { valid: false, error: "Discount code has expired" };
-      }
-    }
+    // Expiration date checks have been removed per user request.
+    // Diskon hanya dibatasi oleh isActive dan maxUses.
 
     return {
       valid: true,
