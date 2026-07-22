@@ -260,7 +260,7 @@ export default function DiscountMasterPage() {
                 type="number"
                 required
                 min="1"
-                max={form.type === 'percentage' ? 100 : undefined}
+                {...(form.type === 'percentage' ? { max: 100 } : {})}
                 placeholder={form.type === 'percentage' ? '100' : '500000'}
                 value={form.value}
                 onChange={e => setForm({...form, value: e.target.value})}
