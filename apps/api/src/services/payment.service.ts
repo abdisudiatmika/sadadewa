@@ -7,7 +7,7 @@ import {
   students,
   incomes,
 } from "../db/schema.js";
-import { eq, and, inArray, sql, gte, ilike, or } from "drizzle-orm";
+import { eq, and, inArray, sql, gte, ilike, or, desc } from "drizzle-orm";
 
 export class PaymentService {
   /**
