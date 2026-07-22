@@ -129,18 +129,29 @@ export class PaymentService {
       const yy = String(now.getFullYear()).slice(-2);
       const dateStr = `${dd}${mm}${yy}`;
 
-      // Get count of transactions for today to get sequential number
+      // Get the latest transaction for today to get the sequential number safely
       const startOfDay = new Date(now);
       startOfDay.setHours(0, 0, 0, 0);
 
-      const [todayCountResult] = await tx
-        .select({ val: sql<number>`count(*)` })
+      const [latestTx] = await tx
+        .select({ transactionCode: transactions.transactionCode })
         .from(transactions)
-        .where(gte(transactions.createdAt, startOfDay));
+        .where(gte(transactions.createdAt, startOfDay))
+        .orderBy(desc(transactions.createdAt))
+        .limit(1);
 
-      const sequence = (Number(todayCountResult?.val || 0) + 1)
-        .toString()
-        .padStart(2, "0");
+      let sequenceNum = 1;
+      if (latestTx?.transactionCode) {
+        const parts = latestTx.transactionCode.split('-');
+        if (parts.length === 2) {
+          const lastNum = parseInt(parts[1], 10);
+          if (!isNaN(lastNum)) {
+            sequenceNum = lastNum + 1;
+          }
+        }
+      }
+
+      const sequence = sequenceNum.toString().padStart(2, "0");
       const transactionCode = `${dateStr}-${sequence}`;
 
       // 7. Create transaction
