@@ -19,6 +19,7 @@ import ReceiptPage from './pages/ReceiptPage';
 import ReceiptIncomePage from './pages/ReceiptIncomePage';
 import PaymentProofsPage from './pages/PaymentProofsPage';
 import UserManagementPage from './pages/UserManagementPage';
+import WaliKelasPage from './pages/WaliKelasPage';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -79,6 +80,7 @@ function AppRoutes() {
         <Route path="discounts" element={<DiscountMasterPage />} />
         <Route path="payment-proofs" element={<PaymentProofsPage />} />
         <Route path="users" element={<UserManagementPage />} />
+        <Route path="wali-kelas" element={<WaliKelasPage />} />
         <Route
           path="*"
           element={
