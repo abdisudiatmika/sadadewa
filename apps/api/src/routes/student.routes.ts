@@ -65,8 +65,8 @@ router.get("/search", async (req: Request, res: Response) => {
 // GET /api/students/template - Download Excel template
 router.get("/template", async (req: Request, res: Response) => {
   try {
-    const headers = ['studentCode', 'nisn', 'fullName', 'gradeAndClass', 'guardianName', 'guardianPhone', 'guardianEmail', 'status'];
-    const sampleRow = ['STD-EXAMPLE', '0011223344', 'Siswa Contoh', '10 BD 1', 'Bapak Contoh', '+62811223344', 'contoh@email.com', 'active'];
+    const headers = ['NID', 'NAMA', 'KELAS', 'nisn', 'guardianName', 'guardianPhone', 'status'];
+    const sampleRow = ['12345', 'Siswa Contoh', '10 BD 1', '0011223344', 'Bapak Contoh', '+62811223344', 'active'];
     
     const worksheet = XLSX.utils.aoa_to_sheet([headers, sampleRow]);
     const workbook = XLSX.utils.book_new();

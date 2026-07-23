@@ -267,7 +267,7 @@ export default function StudentRecordsPage() {
 
       // Pastikan format isiannya string dan trim spasi berlebih
       const records = jsonData.map(row => {
-        const rawClassStr = String(row.gradeAndClass || row.KELAS || row.Kelas || row.kelas || "").trim().toLowerCase();
+        const rawClassStr = String(row.gradeAndClass || row.KELAS || row.Kelas || row.kelas || row.CLASS || row.class || "").trim().toLowerCase();
         let matchedClassId = null;
         
         if (rawClassStr) {
@@ -306,9 +306,9 @@ export default function StudentRecordsPage() {
         }
 
         return {
-          studentCode: String(row.studentCode || row.StudentCode || "").trim(),
-          nisn: String(row.nisn || row.NISN || row.Nisn || "").trim(),
-          fullName: String(row.fullName || row.NAMA || row.Nama || row.nama || "").trim(),
+          studentCode: String(row.studentCode || row.StudentCode || row.NID || row.nid || row.NIS || row.nis || "").trim(),
+          nisn: String(row.nisn || row.NISN || row.Nisn || row.NID || row.nid || row.NIS || row.nis || "").trim(),
+          fullName: String(row.fullName || row.NAMA || row.Nama || row.nama || row.name || row.Name || row.NAME || "").trim(),
           classId: matchedClassId,
           guardianName: String(row.guardianName || row['NAMA AYAH'] || row['Nama Ayah'] || "").trim(),
           guardianPhone: String(row.guardianPhone || row.GuardianPhone || row.NoHP || "").trim(),
@@ -322,10 +322,10 @@ export default function StudentRecordsPage() {
             return ["active", "inactive", "suspended", "graduated"].includes(s) ? s : "active";
           })()
         };
-      }).filter(r => r.studentCode && r.fullName); // Abaikan baris jika tidak ada nama/kode
+      }).filter(r => r.fullName); // Hanya butuh nama untuk import
 
       if (records.length === 0) {
-        throw new Error("Tidak menemukan data valid untuk diunggah. Pastikan kolom 'studentCode' dan 'NAMA' (atau 'fullName') terisi.");
+        throw new Error("Tidak menemukan data valid untuk diunggah. Pastikan kolom 'NID' (atau 'NIS'/'studentCode') dan 'NAMA' (atau 'fullName') terisi.");
       }
 
       const res = await api.bulkUploadStudents(records);

@@ -393,25 +393,31 @@ export class StudentService {
     const results = [];
     for (const r of records) {
       try {
-        // Cari siswa yang sudah ada berdasarkan NISN atau kode siswa
-        const conditions = [eq(students.nisn, r.nisn)];
-        if (r.studentCode) {
-          conditions.push(eq(students.studentCode, r.studentCode));
+        // Jika nisn kosong, gunakan studentCode sebagai nisn (dan sebaliknya)
+        const nisn = r.nisn || r.studentCode || '';
+        const studentCode = r.studentCode || r.nisn || undefined;
+
+        if (!nisn && !r.fullName) {
+          console.warn(`Skipping record with no nisn and no name`);
+          continue;
         }
 
-        const existing = await db.query.students.findFirst({
-          where: or(...conditions),
-        });
+        // Cari siswa yang sudah ada berdasarkan NISN atau kode siswa
+        const conditions = [];
+        if (nisn) conditions.push(eq(students.nisn, nisn));
+        if (studentCode) conditions.push(eq(students.studentCode, studentCode));
+
+        const existing = conditions.length > 0
+          ? await db.query.students.findFirst({ where: or(...conditions) })
+          : null;
 
         if (existing) {
           // Jika siswa sudah ada, update kelas dan data lainnya
-          const student = await this.update(existing.id, r);
-          if (student) {
-            results.push(student);
-          }
+          const student = await this.update(existing.id, { ...r, classId: r.classId });
+          if (student) results.push(student);
         } else {
           // Jika siswa belum ada, buat baru
-          const student = await this.create(r);
+          const student = await this.create({ ...r, nisn, studentCode });
           results.push(student);
         }
       } catch (err) {
