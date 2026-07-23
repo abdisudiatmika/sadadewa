@@ -28,6 +28,7 @@ router.get("/", async (req: Request, res: Response) => {
       gradeId: req.query.gradeId as string,
       classId: req.query.classId as string,
       status: req.query.status as string,
+      teacherId: (req as any).user?.role === "teacher" ? (req as any).user.id : undefined,
     });
 
     res.json({ success: true, ...result });

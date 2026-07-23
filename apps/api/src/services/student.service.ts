@@ -13,6 +13,7 @@ export class StudentService {
     search?: string;
     gradeId?: string;
     classId?: string;
+    teacherId?: string;
     status?: string;
   }) {
     const page = params.page || 1;
@@ -47,6 +48,10 @@ export class StudentService {
       conditions.push(eq(studentClasses.classId, params.classId));
     }
 
+    if (params.teacherId) {
+      conditions.push(eq(classes.homeroomTeacherId, params.teacherId));
+    }
+
     const whereClause =
       conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -79,6 +84,7 @@ export class StudentService {
           eq(studentClasses.academicYearId, academicYears.id),
           eq(academicYears.isActive, true)
         ))
+        .leftJoin(classes, eq(studentClasses.classId, classes.id))
         .where(whereClause),
     ]);
 
