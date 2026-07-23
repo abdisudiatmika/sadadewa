@@ -135,6 +135,16 @@ async function runStartupTasks() {
     for (const val of enumsToAdd) {
       await db.execute(sql.raw(`ALTER TYPE payment_method ADD VALUE IF NOT EXISTS '${val}'`));
     }
+    
+    // Fix discount_type enum: add 'fixed_amount' if it was previously just 'fixed'
+    try {
+      await db.execute(sql.raw(`ALTER TYPE discount_type ADD VALUE IF NOT EXISTS 'fixed_amount'`));
+      await db.execute(sql.raw(`UPDATE discount_codes SET type = 'fixed_amount'::discount_type WHERE type::text = 'fixed'`));
+      console.log("discount_type enum migration successful!");
+    } catch (e: any) {
+      console.log("discount_type enum migration skipped:", e.message);
+    }
+    
     console.log("Enum migration successful!");
   } catch (err: any) {
     // Ignore error if type doesn't exist yet (first run) or other harmless errors

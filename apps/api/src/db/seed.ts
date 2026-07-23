@@ -372,7 +372,7 @@ async function seed() {
     {
       code: "EARLYBIRD",
       description: "Early bird flat discount",
-      type: "fixed",
+      type: "fixed_amount",
       value: 100000,
       maxUses: 50,
       isActive: true,

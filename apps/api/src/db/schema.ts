@@ -67,7 +67,7 @@ export const paymentMethodEnum = pgEnum("payment_method", [
 
 export const discountTypeEnum = pgEnum("discount_type", [
   "percentage",
-  "fixed",
+  "fixed_amount",
 ]);
 
 export const reminderChannelEnum = pgEnum("reminder_channel", [
