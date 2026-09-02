@@ -10,6 +10,7 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-rahasia123}
       POSTGRES_DB: ${DB_NAME:-edupay}
+      TZ: Asia/Makassar
     volumes:
       # Data akan disimpan di dalam volume Docker agar tidak hilang walau Mini PC direstart
       - edupay-db-data:/var/lib/postgresql/data
@@ -43,6 +44,7 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost}
       - NODE_ENV=production
+      - TZ=Asia/Makassar
     volumes:
       - edupay-uploads-data:/app/uploads
     depends_on:
